@@ -4,4 +4,5 @@ class irc:
 	server	= "za.shadowfire.org"
 	port		= 6667
 	channel	= "#werewolf.dev"
-	nickname	= "pyWerewolf"
+	nickname	= ("pyWerewolf", "pyWerewolf_")
+	password	= "werewolf"
