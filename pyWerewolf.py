@@ -2,11 +2,17 @@
 
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
+import config
 
 class WerewolfBot(SingleServerIRCBot):
 	def __init__(self, channel, nickname, server, port=6667):
 		SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
 		self.channel = channel
+		self.connection.add_global_handler("all_events", self.on_all_events, -10)
+
+	def on_all_events(self, c, e):
+		if e.eventtype() == "all_raw_messages": return
+		print "%s %s %s %s" % (e.source(), e.eventtype(), e.target(), e.arguments())
 
 	def on_nicknameinuse(self, c, e):
 		c.nick(c.get_nickname() + "_")
@@ -43,7 +49,7 @@ class WerewolfBot(SingleServerIRCBot):
 		c = self.connection
 		source_nick = nm_to_n(e.source())
 		response = "Hello " + source_nick + "!"
-		
+
 		c.privmsg(self.channel, response)
 
 	def cmd_disconnect(self, e, text):
@@ -56,16 +62,12 @@ class WerewolfBot(SingleServerIRCBot):
 		c = self.connection
 		source_nick = nm_to_n(e.source())
 		response = "Unknown command: " + text
-		
+
 		c.notice(source_nick, response)
 
 def main():
-	server = "za.shadowfire.org"
-	port = 6667
-	channel = "#werewolf.dev"
-	nickname = "pyWerewolf"
-
-	bot = WerewolfBot(channel, nickname, server, port)
+	bot = WerewolfBot(config.irc.channel, config.irc.nickname, \
+							config.irc.server, config.irc.port)
 	bot.start()
 
 if __name__ == "__main__":
