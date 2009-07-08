@@ -23,18 +23,41 @@ class WerewolfBot(SingleServerIRCBot):
 			self.process_command(e, a[1].strip())
 			return
 
-	def process_command(self, e, cmd):
+	def process_command(self, e, text):
 		nick = nm_to_n(e.source())
 		c = self.connection
 
-		if cmd == "hello":
-			c.privmsg(self.channel, "Hello " + nm_to_n(e.source()) + "!")
-		elif cmd == "disconnect":
-			self.disconnect()
-		elif cmd == "die":
-			self.die()
+		cmd = "cmd_" + text.lower()
+		if hasattr(self, cmd):
+			do_cmd = getattr(self, cmd)
+			do_cmd(e, text)
 		else:
-			c.notice(nick, "Unknown command: " + cmd)
+			do_cmd = getattr(self, "cmd_unknown")
+			do_cmd(e, text)
+
+############
+# COMMANDS #
+############
+
+	def cmd_hello(self, e, text):
+		c = self.connection
+		source_nick = nm_to_n(e.source())
+		response = "Hello " + source_nick + "!"
+		
+		c.privmsg(self.channel, response)
+
+	def cmd_disconnect(self, e, text):
+		self.disconnect()
+
+	def cmd_die(self, e, text):
+		self.die()
+
+	def cmd_unknown(self, e, text):
+		c = self.connection
+		source_nick = nm_to_n(e.source())
+		response = "Unknown command: " + text
+		
+		c.notice(source_nick, response)
 
 def main():
 	server = "za.shadowfire.org"
