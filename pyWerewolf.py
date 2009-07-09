@@ -14,7 +14,7 @@ class WerewolfBot(SingleServerIRCBot):
         self.channel = channel
         self.command_handler = Command_Handler(self)
         self.connection.add_global_handler("all_events", self.on_all_events, -100)
-        self.game = game.Game(self)
+        self.game = Game(self)
         self.command_handler.reg_callback("die", self.command_handler.cmd_die)
 
     ### IRC Events ###
