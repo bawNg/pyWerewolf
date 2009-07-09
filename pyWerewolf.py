@@ -3,8 +3,8 @@
 import sys
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
-from command_handler import *
 
+from command_handler import *
 from game import *
 import config
 
@@ -21,6 +21,9 @@ class WerewolfBot(SingleServerIRCBot):
         if e.eventtype() != "all_raw_messages":
             print e.source(), e.eventtype().upper(), e.target(), e.arguments()
 
+    def on_welcome(self, c, e):
+        c.join(self.channel)
+
     def on_nicknameinuse(self, c, e):
         for n in config.irc.nickname:
             if n != c.get_nickname():
@@ -29,9 +32,6 @@ class WerewolfBot(SingleServerIRCBot):
         if c.get_nickname() != config.irc.nickname[0]:
             c.nick(config.irc.nickname[0])
         c.nick(c.get_nickname() + "_")
-
-    def on_welcome(self, c, e):
-        c.join(self.channel)
 
     def on_privmsg(self, c, e):
         msg = e.arguments()[0]
@@ -44,7 +44,7 @@ class WerewolfBot(SingleServerIRCBot):
         a = msg.split(":", 1)
         if len(a) > 1 and irc_lower(a[0]) == irc_lower(c.get_nickname()):
             self.command_handler.process_command(e, a[1].strip())
-        elif (msg[:1] == "!") and ((msg.find("!",1,4) & msg.find("?",1,4)) == -1):
+        elif msg[:1] == "!" and ((msg.find("!",1,4) & msg.find("?",1,4)) == -1):
             self.command_handler.process_command(e, msg[1:])
 
     def on_privnotice(self, c, e):
