@@ -21,30 +21,36 @@ class Command_Handler:
     def __init__(self, bot):
         self.irc = bot
         self.c  = bot.connection
+        self.callbacks = {}                #callbacks dictionary
+
+    def reg_callback(self, command, callback):
+        """command is the command that will be linked to the callback
+           callback is the function to be run when that command is ran
+                    callbacks have to be in the form of:
+                    def cb(who, args):
+                    where who is the person who ran the command
+                    and args are the args to that command"""
+        self.callbacks[command.upper()] = callback
 
     def process_command(self, e, msg):
         target  = e.target()
-        nick        = nm_to_n(e.source())
+        nick    = nm_to_n(e.source())
 
         print "[Command_Handler] Recieved command [%s] from [%s] type [%s]." % \
                     (msg, nick,  e.eventtype().upper())
 
-        msg_event = Command_Message(e, msg)
-        if msg_event.target == self.c.get_nickname(): msg_event.target = nick
+        try:
+            command = msg.split()[0].upper()
+            args = msg.split()[1:]
 
-        cmd = "cmd_" + msg.split(" ")[0]
-        do_cmd = getattr(self, "cmd_unknown")
-        if hasattr(self, cmd): do_cmd = getattr(self, cmd)
-        do_cmd(self.c, msg_event)
+            if command in self.callbacks:
+                self.callbacks[command](nick, args)
 
-    def cmd_hello(self, c, e):
-        c.privmsg(e.target, "Hello %s!" % e.nick)
-
-    def cmd_disconnect(self, c, e):
-        self.irc.disconnect()
-
-    def cmd_die(self, c, e):
+        except Exception as exc:
+            print "Failed to process msg:", msg
+            print "from:", nick
+            print "reason:", exc.message
+            
+    def cmd_die(self, who, args):
         self.irc.die()
 
-    def cmd_unknown(self, c, e):
-        c.notice(e.nick, "Unknown command: %s" % e.command)
