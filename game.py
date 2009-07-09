@@ -6,6 +6,7 @@ import config
 
 class Game(object):
     def __init__(self, bot):
+        bot.send_message(bot.channel, "Game started")
         self.irc = bot
         self.c  = bot.connection
         self.execute_delayed = bot.connection.execute_delayed

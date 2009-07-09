@@ -14,8 +14,10 @@ class WerewolfBot(SingleServerIRCBot):
         self.channel = channel
         self.command_handler = Command_Handler(self)
         self.connection.add_global_handler("all_events", self.on_all_events, -100)
-        self.game = Game(self)
+        self.game = None
         self.command_handler.reg_callback("die", self.command_handler.cmd_die)
+        self.command_handler.reg_callback("start", self.start_game)
+        self.command_handler.reg_callback("end", self.end_game)
 
     ### IRC Events ###
     def on_all_events(self, c, e):
@@ -61,6 +63,15 @@ class WerewolfBot(SingleServerIRCBot):
 
     def send_notice(self, target, msg):
         self.connection.privnotice(target, msg)
+
+    ### Game Management Methods ###
+    def start_game(self, who, args):
+        if self.game == None:
+            self.game = Game(self)
+            #TODO: add player in who started game
+    
+    def end_game(self):
+        self.game = None
 
 def main():
     if len(sys.argv) is 5:

@@ -32,6 +32,11 @@ class Command_Handler:
                     and args are the args to that command"""
         self.callbacks[command.upper()] = callback
 
+    def unreg_callback(self, command):
+        command = command.upper()
+        if command in self.callbacks:
+            del self.callbacks[command]
+
     def process_command(self, e, msg):
         target  = e.target()
         nick    = nm_to_n(e.source())
@@ -45,12 +50,11 @@ class Command_Handler:
 
             if command in self.callbacks:
                 self.callbacks[command](nick, args)
-
         except Exception as exc:
             print "Failed to process msg:", msg
             print "from:", nick
-            print "reason:", exc.message
-            
+            print "reason:", str(exc)
+
     def cmd_die(self, who, args):
         self.irc.die()
 
