@@ -14,9 +14,9 @@ class WerewolfBot(SingleServerIRCBot):
         self.connection.add_global_handler("all_events", self.on_all_events, -100)
         self.game = game.Game(self)
 
+    ### IRC Events ###
     def on_all_events(self, c, e):
         if e.eventtype() != "all_raw_messages":
-
             print e.source(), e.eventtype().upper(), e.target(), e.arguments()
 
     def on_nicknameinuse(self, c, e):
@@ -51,7 +51,11 @@ class WerewolfBot(SingleServerIRCBot):
         if (nick == "NickServ") and \
         (msg.startswith("This nickname is registered and protected.")):
             c.privmsg(nick, "identify %s" % config.irc.password)
-    
+
+    ### Wrapper Methods ###
+    def send_message(self, target, msg): self.connection.privmsg(target, msg)
+    def send_notice(self, target, msg): self.connection.privnotice(target, msg)
+
 def main():
     bot = WerewolfBot(config.irc.channel, config.irc.nickname[0], \
                             config.irc.server, config.irc.port)
