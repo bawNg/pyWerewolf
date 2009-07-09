@@ -55,6 +55,3 @@ class Command_Handler:
             print "from:", nick
             print "reason:", str(exc)
 
-    def cmd_die(self, who, args):
-        self.irc.die()
-

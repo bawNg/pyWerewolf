@@ -17,7 +17,7 @@ class WerewolfBot(SingleServerIRCBot):
         self.game = None
         self.command_handler.reg_callback("start", self.start_game)
         #TODO: remove these callbacks
-        self.command_handler.reg_callback("die", self.command_handler.cmd_die)
+        self.command_handler.reg_callback("die", self.cmd_die)
         self.command_handler.reg_callback("end", self.end_game)
 
     ### IRC Events ###
@@ -73,6 +73,10 @@ class WerewolfBot(SingleServerIRCBot):
     
     def end_game(self):
         self.game = None
+
+    ### Miscellaneous ###
+    def cmd_die(self, who, args):
+        self.die()
 
 def main():
     if len(sys.argv) is 5:
