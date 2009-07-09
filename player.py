@@ -1,50 +1,61 @@
 #!/usr/bin/env python
 
-class base_role:
+class Role:
+	villager = 0
+	wolf		= 1
+	seer		= 2
+	guardian = 3
+
+class Abilities:
+	vote	= 0
+	kill	= 1
+	see	= 2
+	guard	= 3
+
+class Base_Role:
 	def __init__(self):
 		#role in the game
-		self.role = ''
+		self.role = None
 		#what the seer sees
-		self.appears_as = ''
+		self.appears_as = None
 		#role abilities eg. vote, see, etc.
 		self.abilities = []
 		#which party does this role win with
-		self.wins_with = ''
+		self.wins_with = None
 
-class villager(base_role):
+class Villager(Base_Role):
 	def __init__(self):
 		base_role.__init__(self)
-		self.role = 'villager'
-		self.appears_as = 'villager'
-		self.abilities.append('vote')
-		self.wins_with = 'villagers'
+		self.role = Role.villager
+		self.appears_as = 'Villager'
+		self.abilities.append(Abilities.vote)
+		self.wins_with = Role.villager
 
-class wolf(villager):
+class Wolf(Villager):
 	def __init__(self):
-		villager.__init__(self)
-		self.role = 'wolf'
-		self.appears_as = 'wolf'
-		self.abilities.append('kill')
-		self.wins_with = 'wolves'
+		Villager.__init__(self)
+		self.role = Role.wolf
+		self.appears_as = "Wolf"
+		self.abilities.append(Abilities.kill)
+		self.wins_with = Role.wolf
 
-class seer(villager):
+class Seer(Villager):
 	def __init__(self):
-		villager.__init__(self)
-		self.role = 'seer'
-		self.appears_as = 'seer'
-		self.abilities.append('see')
-		self.wins_with = 'villager'
+		Villager.__init__(self)
+		self.role = Role.seer
+		self.appears_as = "Seer"
+		self.abilities.append(Abilities.see)
+		self.wins_with = Role.villager
 
-class traitor(villager):
+class Traitor(Villager):
 	def __init__(self):
-		villager.__init__(self)
-		self.appears_as = 'wolf'
+		Villager.__init__(self)
+		self.appears_as = "Wolf"
 
-class guardian(villager):
+class Guardian(Villager):
 	def __init__(self):
-		villager.__init__(self)
-		self.role = 'guardian'
-		self.appears_as = 'guardian'
-		self.abilities.append('guard')
-		self.wins_with = 'villager'
-
+		Villager.__init__(self)
+		self.role = Role.guardian
+		self.appears_as = "Guardian"
+		self.abilities.append(Abilities.guard)
+		self.wins_with = Role.villager
