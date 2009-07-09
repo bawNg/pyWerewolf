@@ -25,3 +25,4 @@ class Game(object):
 
     def vote_tally(self,):
         pass
+
