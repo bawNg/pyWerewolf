@@ -55,23 +55,20 @@ class WerewolfBot(SingleServerIRCBot):
             c.privmsg(nick, "identify %s" % config.irc.password)
     
 def main():
-<<<<<<< HEAD:pyWerewolf.py
-	if len(sys.argv) is 5:
-		bot = WerewolfBot(sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]))
-	elif len(sys.argv) is not 1:
-		print "Usage:\n\tpyWerewolf.py <#channel> <nickname> <server> <port>"
-		sys.exit(1)
-	else:
-		bot = WerewolfBot(config.irc.channel, config.irc.nickname[0], \
-									config.irc.server, config.irc.port)
-	try:
-		bot.start()
-	except KeyboardInterrupt:
-		print "^C - Exiting gracefully..."
-		bot.disconnect(msg="Terminated at terminal")
-		sys.exit(0)
+    if len(sys.argv) is 5:
+        bot = WerewolfBot(sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]))
+    elif len(sys.argv) is not 1:
+        print "Usage:\n\tpyWerewolf.py [<#channel> <nickname> <server> <port>]"
+        sys.exit(1)
+    else:
+        bot = WerewolfBot(config.irc.channel, config.irc.nickname[0], \
+                                    config.irc.server, config.irc.port)
+    try:
+        bot.start()
+    except KeyboardInterrupt:
+        print "^C - Exiting gracefully..."
+        bot.disconnect(msg="Terminated at terminal")
+        sys.exit(0)
 
 if __name__ == "__main__":
-	main()
-
-
+    main()
