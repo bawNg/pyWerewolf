@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
+import sys
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
 from command_handler import *
 
+from game import *
 import config
-import sys
-import game
 
 class WerewolfBot(SingleServerIRCBot):
     def __init__(self, channel, nickname, server, port=6667):
@@ -14,11 +14,11 @@ class WerewolfBot(SingleServerIRCBot):
         self.channel = channel
         self.command_handler = Command_Handler(self)
         self.connection.add_global_handler("all_events", self.on_all_events, -100)
-        self.game = game.Game(self)
+        self.game = None
 
+    ### IRC Events ###
     def on_all_events(self, c, e):
         if e.eventtype() != "all_raw_messages":
-
             print e.source(), e.eventtype().upper(), e.target(), e.arguments()
 
     def on_nicknameinuse(self, c, e):
@@ -53,7 +53,11 @@ class WerewolfBot(SingleServerIRCBot):
         if (nick == "NickServ") and \
         (msg.startswith("This nickname is registered and protected.")):
             c.privmsg(nick, "identify %s" % config.irc.password)
-    
+
+    ### Wrapper Methods ###
+    def send_message(self, target, msg): self.connection.privmsg(target, msg)
+    def send_notice(self, target, msg): self.connection.privnotice(target, msg)
+
 def main():
     if len(sys.argv) is 5:
         bot = WerewolfBot(sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]))
