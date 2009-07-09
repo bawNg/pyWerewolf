@@ -21,7 +21,10 @@ class Command_Handler:
     def __init__(self, bot):
         self.irc = bot
         self.c  = bot.connection
-        self.callbacks = {}                #callbacks dictionary
+        self.callbacks  = {}    #callbacks dictionary
+        self.nick_cb    = None  #nick callback      -when user renames
+        self.join_cb    = None  #join callback      - when user joins channel
+        self.leave_cb   = None  #leave callback     - when user leaves channel
 
     def reg_callback(self, command, callback):
         """command is the command that will be linked to the callback
@@ -36,6 +39,39 @@ class Command_Handler:
         command = command.upper()
         if command in self.callbacks:
             del self.callbacks[command]
+
+    def reg_nick_callback(self, callback):
+        """callback is the function that will be called when a user
+           changes their nick.
+           callback must be of the form:
+                def cb(old, new):
+                where old is the old nick and new is the new one"""
+        self.nick_cb = callback
+
+    def unreg_nick_callback(self):
+        self.nick_cb = None
+
+    def reg_join_callback(self, callback):
+        """callback is the function that will be called when a user
+           joins the channel.
+           callback must be of the form:
+                def cb(user):
+                where user is the name of the user"""
+        self.join_cb = callback
+
+    def unreg_join_callback(self):
+        self.join_cb = None
+
+    def reg_leave_callback(self, callback):
+        """callback is the function that will be called when a user
+           leaves the channel.
+           callback must be of the form:
+                def cb(user):
+                where user is the name of the user"""
+        self.leave_cb = callback
+
+    def unreg_leave_callback(self):
+        self.leave_cb = None
 
     def process_command(self, e, msg):
         target  = e.target()
@@ -54,4 +90,26 @@ class Command_Handler:
             print "Failed to process msg:", msg
             print "from:", nick
             print "reason:", str(exc)
+
+    def process_nick(self, e):
+        target  = e.target()
+        nick    = nm_to_n(e.source())
+        self.irc.send_message(self.irc.channel, nick + " has change their nick to " + target)
+        if self.nick_cb != None:
+            self.nick_cb(nick, target)
+        pass
+
+    def process_join(self, e):
+        nick    = nm_to_n(e.source())
+        self.irc.send_message(self.irc.channel, nick + " has joined the channel")
+        if self.join_cb != None:
+            self.join_cb(nick)
+        pass
+
+    def process_leave(self, e):
+        nick    = nm_to_n(e.source())
+        self.irc.send_message(self.irc.channel, nick + " has left the channel")
+        if self.leave_cb != None:
+            self.leave_cb(nick)
+        pass
 

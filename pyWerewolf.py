@@ -19,6 +19,8 @@ class WerewolfBot(SingleServerIRCBot):
         #TODO: remove these callbacks
         self.command_handler.reg_callback("die", self.cmd_die)
         self.command_handler.reg_callback("end", self.end_game)
+        import ircbot
+        print ircbot
 
     ### IRC Events ###
     def on_all_events(self, c, e):
@@ -57,6 +59,21 @@ class WerewolfBot(SingleServerIRCBot):
         if (nick == "NickServ") and \
         (msg.startswith("This nickname is registered and protected.")):
             c.privmsg(nick, "identify %s" % config.irc.password)
+
+    def on_kick(self, c, e):
+        self.command_handler.process_leave(e)
+
+    def on_part(self, c, e):
+        self.command_handler.process_leave(e)
+        
+    def on_quit(self, c, e):
+        self.command_handler.process_leave(e)
+
+    def on_join(self, c, e):
+        self.command_handler.process_join(e)
+
+    def on_nick(self, c, e):
+        self.command_handler.process_nick(e)
 
     ### Wrapper Methods ###
     def send_message(self, target, msg):
