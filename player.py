@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
 class Role:
-    villager = 0
+    villager    = 0
     wolf        = 1
     seer        = 2
-    guardian = 3
+    guardian    = 3
 
 class Abilities:
     vote    = 0
     kill    = 1
-    see = 2
+    see     = 2
     guard   = 3
 
 class Base_Role:

@@ -18,7 +18,7 @@ class WerewolfBot(SingleServerIRCBot):
         self.command_handler.reg_callback("start", self.start_game)
         #TODO: remove these callbacks
         self.command_handler.reg_callback("die", self.cmd_die)
-        self.command_handler.reg_callback("end", self.end_game)
+        self.command_handler.reg_callback("end", self.cmd_end)
         import ircbot
         print ircbot
 
@@ -80,7 +80,7 @@ class WerewolfBot(SingleServerIRCBot):
         self.connection.privmsg(target, msg)
 
     def send_notice(self, target, msg):
-        self.connection.privnotice(target, msg)
+        self.connection.notice(target, msg)
 
     ### Game Management Methods ###
     def start_game(self, who, args):
@@ -89,11 +89,16 @@ class WerewolfBot(SingleServerIRCBot):
             #TODO: add player in who started game
     
     def end_game(self):
-        self.game = None
+        if self.game != None:
+            self.game.end()
+            self.game = None
 
     ### Miscellaneous ###
     def cmd_die(self, who, args):
         self.die()
+
+    def cmd_end(self, who, args):
+        self.end_game()
 
 def main():
     if len(sys.argv) is 5:

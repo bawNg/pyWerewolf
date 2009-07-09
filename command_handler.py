@@ -87,6 +87,7 @@ class Command_Handler:
             if command in self.callbacks:
                 self.callbacks[command](nick, args)
         except Exception as exc:
+            self.irc.send_message
             print "Failed to process msg:", msg
             print "from:", nick
             print "reason:", str(exc)
