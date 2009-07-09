@@ -3,8 +3,8 @@
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
 from command_handler import *
+from game import *
 import config
-import game
 
 class WerewolfBot(SingleServerIRCBot):
     def __init__(self, channel, nickname, server, port=6667):
@@ -12,7 +12,7 @@ class WerewolfBot(SingleServerIRCBot):
         self.channel = channel
         self.command_handler = Command_Handler(self)
         self.connection.add_global_handler("all_events", self.on_all_events, -100)
-        self.game = game.Game(self)
+        self.game = None
 
     ### IRC Events ###
     def on_all_events(self, c, e):
