@@ -4,14 +4,14 @@ from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_nu
 
 class Command_Message:
 	def __init__(self, e, msg):
-		self.event_type	= e.eventtype()
-		self.source			= e.source()
-		self.target			= e.target()
-		self.nick			= nm_to_n(e.source())
-		self.raw_message	= msg
-		self.command		= msg.split(" ")[0]
-		self.payload		= None
-		self.args			= None
+		self.event_type	= e.eventtype()		# event type is pubmsg, privmsg,etc
+		self.source			= e.source()			# source user's nick mask
+		self.target			= e.target()			# target user/channel to reply to
+		self.nick			= nm_to_n(e.source())# source user's nickname
+		self.raw_message	= msg						# raw message sent by user
+		self.command		= msg.split(" ")[0]	# command string is the first word
+		self.payload		= None					# payload is the first argument
+		self.args			= None					# all arguments given after command
 		if len(msg.split(" ")) >= 2:
 			self.payload = msg.split(" ")[1]
 			self.args	 = msg.split(" ")[1:]
@@ -26,7 +26,8 @@ class Command_Handler:
 		target	= e.target()
 		nick		= nm_to_n(e.source())
 
-		print "[Command_Handler] Recieved command [%s] from [%s] type [%s]." % (msg, nick,  e.eventtype().upper())
+		print "[Command_Handler] Recieved command [%s] from [%s] type [%s]." % \
+					(msg, nick,  e.eventtype().upper())
 
 		msg_event = Command_Message(e, msg)
 		if msg_event.target == self.c.get_nickname(): msg_event.target = nick
