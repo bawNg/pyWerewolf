@@ -14,7 +14,7 @@ class WerewolfBot(SingleServerIRCBot):
         self.channel = channel
         self.command_handler = Command_Handler(self)
         self.connection.add_global_handler("all_events", self.on_all_events, -100)
-        self.game = Noone
+        self.game = game.Game(self)
 
     def on_all_events(self, c, e):
         if e.eventtype() != "all_raw_messages":
@@ -54,13 +54,6 @@ class WerewolfBot(SingleServerIRCBot):
         (msg.startswith("This nickname is registered and protected.")):
             c.privmsg(nick, "identify %s" % config.irc.password)
     
-    def start_game():
-        if self.game != Noone:
-            self.game = game.Game(self)
-
-    def end_game():
-        self.game = Noone
-
 def main():
 <<<<<<< HEAD:pyWerewolf.py
 	if len(sys.argv) is 5:
