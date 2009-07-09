@@ -4,6 +4,7 @@ from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
 from command_handler import *
 import config
+import game
 
 class WerewolfBot(SingleServerIRCBot):
     def __init__(self, channel, nickname, server, port=6667):
@@ -19,7 +20,9 @@ class WerewolfBot(SingleServerIRCBot):
 
     def on_nicknameinuse(self, c, e):
         for n in config.irc.nickname:
-            if n != c.get_nickname(): c.nick(n); break
+            if n != c.get_nickname():
+                c.nick(n)
+                break
         if c.get_nickname() != config.irc.nickname[0]:
             c.nick(config.irc.nickname[0])
         c.nick(c.get_nickname() + "_")
@@ -47,7 +50,13 @@ class WerewolfBot(SingleServerIRCBot):
         if (nick == "NickServ") and \
         (msg.startswith("This nickname is registered and protected.")):
             c.privmsg(nick, "identify %s" % config.irc.password)
+    
+    def start_game():
+        if self.game != Noone:
+            self.game = game.Game(self)
 
+    def end_game():
+        self.game = Noone
 
 def main():
     bot = WerewolfBot(config.irc.channel, config.irc.nickname[0], \
