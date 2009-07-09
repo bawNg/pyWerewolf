@@ -3,15 +3,15 @@
 #werewolf game logic
 from player import *
 import config
-from threading import Timer
 
-class werewolf(object):
+class Game(object):
 	def __init__(self, bot):
 		self.irc = bot
-		self.c = bot.connection
+		self.c 	= bot.connection
+		self.execute_delayed = bot.connection.execute_delayed
 		self.players = {}
 
-	def signup(self): #hold game signups 
+	def signup(self): #hold game signups
 		pass
 
 	def assign_roles(self,): #assign player roles
