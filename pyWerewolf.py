@@ -3,7 +3,9 @@
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
 from command_handler import *
+
 import config
+import sys
 
 class WerewolfBot(SingleServerIRCBot):
 	def __init__(self, channel, nickname, server, port=6667):
@@ -40,14 +42,26 @@ class WerewolfBot(SingleServerIRCBot):
 
 	def on_privnotice(self, c, e):
 		nick = nm_to_n(e.source())
-		if (nick == "NickServ") and (e.arguments()[0][:42] == "This nickname is registered and protected."):
+		if nick is "NickServ" and e.arguments()[0].startswith("This nickname is registered and protected."):
 			c.privmsg(nick, "identify %s" % config.irc.password)
 
 
 def main():
-	bot = WerewolfBot(config.irc.channel, config.irc.nickname[0], \
-							config.irc.server, config.irc.port)
-	bot.start()
+	if len(sys.argv) is 5:
+		bot = WerewolfBot(sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]))
+	elif len(sys.argv) is not 1:
+		print "Usage:\n\tpyWerewolf.py <#channel> <nickname> <server> <port>"
+		sys.exit(1)
+	else:
+		bot = WerewolfBot(config.irc.channel, config.irc.nickname[0], \
+									config.irc.server, config.irc.port)
+	try:
+		bot.start()
+	except KeyboardInterrupt:
+		print "^C - Exiting gracefully..."
+		bot.disconnect(msg="Terminated at terminal")
+		sys.exit(0)
 
 if __name__ == "__main__":
 	main()
+

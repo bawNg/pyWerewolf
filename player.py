@@ -47,3 +47,4 @@ class guardian(villager):
 		self.appears_as = 'guardian'
 		self.abilities.append('guard')
 		self.wins_with = 'villager'
+

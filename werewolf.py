@@ -25,3 +25,4 @@ class werewolf(object):
 
 	def vote_tally(self,):
 		pass
+

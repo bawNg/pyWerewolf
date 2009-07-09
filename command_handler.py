@@ -20,13 +20,14 @@ class Command_Message:
 class Command_Handler:
 	def __init__(self, bot):
 		self.irc = bot
-		self.c	= bot.connection
+		self.c = bot.connection
 
 	def process_command(self, e, msg):
 		target	= e.target()
-		nick		= nm_to_n(e.source())
+		nick	= nm_to_n(e.source())
 
-		print "[Command_Handler] Recieved command [%s] from [%s] type [%s]." % (msg, nick,  e.eventtype().upper())
+		print "[Command_Handler] Recieved command [%s] from [%s] type [%s]." % \
+											(msg, nick,  e.eventtype().upper())
 
 		msg_event = Command_Message(e, msg)
 		if msg_event.target == self.c.get_nickname(): msg_event.target = nick
@@ -48,3 +49,4 @@ class Command_Handler:
 
 	def cmd_unknown(self, c, e):
 		c.notice(e.nick, "Unknown command: %s" % e.command)
+
