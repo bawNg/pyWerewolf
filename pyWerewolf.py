@@ -12,6 +12,7 @@ class WerewolfBot(SingleServerIRCBot):
         self.channel = channel
         self.command_handler = Command_Handler(self)
         self.connection.add_global_handler("all_events", self.on_all_events, -100)
+        self.game = Noone
 
     def on_all_events(self, c, e):
         if e.eventtype() != "all_raw_messages":
