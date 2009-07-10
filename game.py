@@ -25,14 +25,45 @@ class Game(object):
         self.players[who.lower()] = (None, who)
 
     def _rem_player(self, who):
-        pass #remove player from player list and check if game ended
+        pass #TODO: remove player from player list and check if game ended
+    
+    def _check_win(self):
+        return False#TODO: count num wolves and num villagers
 
     def _can_start_game(self):
         return len(self.players) >= 5
 
     def _assign_roles(self):
-        num_players = len(self.players)
-        num_wolves = 1        
+        num_players     = len(self.players)
+        num_wolves      = num_players//5
+        num_angels      = 1
+        num_traitors    = 1
+        num_guards      = num_players//9
+        num_seers       = num_players//6
+        num_villagers   = num_players-num_wolves-num_angels-num_traitors- \
+                            num_guards-num_seers
+        if num_wolves < 1:
+            num_wolves = 1
+        if num_seers < 1:
+            num_seers = 1
+        roles = []
+        for i in xrange(num_wolves):
+            roles.append(Wolf())
+        for i in xrange(num_angels):
+            roles.append(Angel())
+        for i in xrange(num_traitors):
+            roles.append(Traitor())
+        for i in xrange(num_guards):
+            roles.append(Guard())
+        for i in xrange(num_seers):
+            roles.append(Seer())
+        for i in xrange(num_villagers):
+            roles.append(Villager())
+        random.shuffle(roles)
+        for i, player in enumerate(self.players.keys()):
+            self.players[player][0] = roles[i]
+            print self.players[player][1], self.theme.roles[roles[i].role]
+            #TODO: Output player roles
 
     def start(self, who):
         #register callbacks
@@ -47,14 +78,53 @@ class Game(object):
         self.players = {}
         self.mode = Mode.join
         self._add_player(who)
+        #TODO: start join end timer
 
     def end(self):
         for cb in Commands.game:
             self.irc.callbacks.unreg_callback(cb)
         self.irc.callbacks.unreg_leave_callback()
         self.irc.callbacks.unreg_nick_callback()
+        #TODO: kill timers
 
-    def join_ends(self):
+    def join_end(self):
+        if self._can_start_game():
+            #TODO: Unvoice everyone
+            #TODO: moderate channel
+            self._assign_roles()
+            #TODO: Start Night
+            pass
+        else:
+            #TODO: tell too few players
+            self.irc.end_game()
+
+    def night_start(self):
+        #TODO: tell alive roles what to do
+        #TODO: start timers
+        pass
+
+    def night_end(self):
+        #TODO: output results of night
+        if not self._check_win():
+            #TODO: start day
+            pass
+
+    def day_start(self):
+        #TODO: Voice alive people
+        #TODO: start vote start timer
+        pass
+
+    def vote_start(self):
+        #TODO: tell people how to vote
+        #TODO: start vote end timer
+        pass
+
+    def vote_end(self):
+        #TODO: unvoice everyone
+        #TODO: tally votes
+        #TODO: kill player
+        #TODO: check win
+        #TODO: start_night
         pass
 
     def join(self, who, args):
@@ -64,6 +134,7 @@ class Game(object):
                 self.theme.user = who
                 self.theme.num  = str(len(self.players))
                 self._chan_message(self.theme.join_new_message)
+                #TODO: update timeleft
             else:
                 self._notice(who, self.theme.join_old_message)
     
