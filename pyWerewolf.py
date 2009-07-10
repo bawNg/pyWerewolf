@@ -17,6 +17,7 @@ class WerewolfBot(SingleServerIRCBot):
         self.game = None
         self.command_handler.reg_callback("start", self.start_game)
         #TODO: remove these callbacks
+        self.admin = ["BLAQ_PHOENIX", "SHADOWMASTER", "DEFI"] 
         self.command_handler.reg_callback("die", self.cmd_die)
         self.command_handler.reg_callback("end", self.cmd_end)
         import ircbot
@@ -95,10 +96,16 @@ class WerewolfBot(SingleServerIRCBot):
 
     ### Miscellaneous ###
     def cmd_die(self, who, args):
-        self.die()
+        if who.upper() in self.admin:
+            self.die()
+        else:
+            self.send_message(self.channel, "Help! " + who + " tried to kill me :'(")
 
     def cmd_end(self, who, args):
-        self.end_game()
+        if who.upper() in self.admin:
+            self.end_game()
+        else:
+            self.send_message(self.channel, "Help! " + who + " tried to end my fun :'(")
 
 def main():
     if len(sys.argv) is 5:
