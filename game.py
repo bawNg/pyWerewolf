@@ -9,26 +9,26 @@ class Game(object):
     def __init__(self, bot, who):
         self.irc = bot
         self.c  = bot.connection
-        self.execute_delayed = bot.connection.execute_delayed
+        self.add_timer = bot.timers.add_timer
         self.theme = Theme()
         self.players = {}
         self.mode = Mode.join
         self._start(who)
 
     def _chan_message(self, message_list):
-        self.irc.send_message(self.irc.channel, 
+        self.irc.send_message(self.irc.channel,
                               self.theme.get_string(message_list))
 
     def _notice(self, who, message_list):
-        self.irc.send_notice(who, 
+        self.irc.send_notice(who,
                              self.theme.get_string(message_list))
-        
+
     def _add_player(self, who):
         self.players[who.lower()] = Player(who)
 
     def _rem_player(self, who):
         pass #TODO: remove player from player list and check if game ended
-    
+
     def _check_win(self):
         return False#TODO: count num wolves and num villagers
 
@@ -149,7 +149,7 @@ class Game(object):
                 self.theme.reset()
                 self.theme.user = who
                 self._notice(who, self.theme.join_old_message)
-    
+
     def vote(self, who, args):
         if len(args) == 1:
             if self.mode == Mode.day_vote:
@@ -173,7 +173,7 @@ class Game(object):
         else:
             #TODO: output invalid format
             pass
-    
+
     def guard(self, who, args):
         if len(args) == 1:
             if self.mode == Mode.night:
@@ -205,11 +205,10 @@ class Game(object):
                 tplayers.append(player.name)
             self.theme.user = tplayers[random.randint(0, len(tplayers)-1)]
             #TODO: print to channnel the random name
-    
+
     def player_leave(self, who):
         self._rem_player(who)
-    
+
     def player_nick(self, old, new):
         """player nick change"""
         self.player_leave(old)
-
