@@ -6,6 +6,7 @@ from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
 
 from command_handler import *
+from timers import *
 from callbacks import *
 from game import *
 import config
@@ -16,6 +17,7 @@ class WerewolfBot(SingleServerIRCBot):
         self.channel = channel
         self.command_handler = Command_Handler(self)
         self.connection.add_global_handler("all_events", self.on_all_events, -100)
+        self.timers = Timers()
         self.callbacks = Callbacks(self)
         #game
         self.game = None
@@ -146,6 +148,10 @@ class WerewolfBot(SingleServerIRCBot):
             self.end_game()
         else:
             self.send_message(self.channel, "Help! " + who + " tried to end my fun :'(")
+
+    def process_forever(self):
+        self.connection.process_once(0.2)
+        self.timers.process_timeout()
 
 def main():
     if len(sys.argv) is 5:
