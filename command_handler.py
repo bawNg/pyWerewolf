@@ -34,7 +34,7 @@ class Command_Handler:
             command = msg.split()[0].lower()
             args = msg.split()[1:]
 
-            self.irc.run_command(command, nick, args)
+            self.irc.callbacks.run_command(command, nick, args)
         except Exception as exc:
             print "Failed to process msg:", msg
             print "from:", nick

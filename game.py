@@ -22,7 +22,7 @@ class Game(object):
                              self.theme.get_string(message_list))
         
     def _add_player(self, who):
-        self.players[who] = None
+        self.players[who.lower()] = None
 
     def _rem_player(self, who):
         pass #remove player from player list and check if game ended
@@ -30,9 +30,9 @@ class Game(object):
     def start(self, who):
         #register callbacks
         for cb in Commands.game:
-            self.irc.reg_callback(cb, getattr(self, cb))
-        self.irc.reg_leave_callback(self.player_leave)
-        self.irc.reg_nick_callback(self.player_nick)
+            self.irc.callbacks.reg_callback(cb, getattr(self, cb))
+        self.irc.callbacks.reg_leave_callback(self.player_leave)
+        self.irc.callbacks.reg_nick_callback(self.player_nick)
 
         #setup game info
         self.theme.user = who
@@ -43,9 +43,9 @@ class Game(object):
 
     def end(self):
         for cb in Commands.game:
-            self.irc.unreg_callback(cb)
-        self.irc.unreg_leave_callback()
-        self.irc.unreg_nick_callback()
+            self.irc.callbacks.unreg_callback(cb)
+        self.irc.callbacks.unreg_leave_callback()
+        self.irc.callbacks.unreg_nick_callback()
 
     def join(self, who, args):
         if self.mode == Mode.join:
