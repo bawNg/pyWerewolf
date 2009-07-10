@@ -11,6 +11,7 @@ class Timers:
                 self.arguments = args
             else:
                 self.arguments = (args,)
+        def set_timeleft(self, time_left): self.timeout = time.time()+time_left
         def extend(self, delay): self.timeout += delay
         def get_timeleft(self): return self.timeout - time.time()
         def remove(self): self.method = None
@@ -30,8 +31,16 @@ class Timers:
     def remove_timer(self, timer):
         self._timers.remove(timer)
 
+    def set_timeleft(self, timer, time_left):
+        self._timers[timer].set_timeleft(time_left)
+
     def extend_timer(self, timer, delay):
         self._timers[timer].extend(delay)
+
+    def get_timer(self, method):
+        for timer in self._timers:
+            if self.method == method: return timer
+        return None
 
     def process_timeout(self):
         while self._timers:
