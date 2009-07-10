@@ -53,6 +53,8 @@ class Theme:
     #message when game starts
     game_start_message = ["$user started a new game!"]
 
+    ### JOIN MESSAGES ###
+
     #message when someone new joins hunt
     join_new_message = ["$num. $user joined the hunt!"]
     
@@ -88,6 +90,8 @@ class Theme:
     #message when joining fails
     join_fail_message = ["Sorry not enough players have joined."]
     
+    ### VOTE MESSAGES ###
+
     #message when voting starts
     vote_start_message = ["Voting has started. Type: !vote <target> to vote."]
 
@@ -103,6 +107,7 @@ class Theme:
     #message when noone is killed by lynch vote
     vote_die_noone_message = ["Noone was voted for. The good thingies \
                                will not be happy"]
+    ### LYNCH MESSAGES ###
     
     #message when seer is killed by a lynch vote
     vote_die_seer_message = ["$target runs before the mob is organised, dashing \
@@ -141,6 +146,7 @@ class Theme:
                                  villagers shouts and cheers fade as they \
                                  realise the moon is already up - $target was \
                                  not a werewolf after all...",
+    
                                 "Realising the angry mob is turning, $target \
                                 tries to run, but is quickly seized upon. $target\
                                 is strung up to the hanging tree, and a hunter \
@@ -149,4 +155,63 @@ class Theme:
                                 a dull snap, and $target hangs, silent, \
                                 motionless. The silent villagers quickly realise\
                                 their grave mistake..."]
-
+    
+    ### KILL MESSAGES ###
+    
+    #message when villager is killed by a wolf
+    kill_die_villager_message = ["The villagers gather the next morning in the \
+                                 village center, but $target does not appear. \
+                                 The villagers converge on $target's home and \
+                                 find him/her decapitated in their bed. After \
+                                 carrying the body to the church, the villagers,\
+                                 now hysterical, return to the village center \
+                                 to decide how to retaliate...",
+    
+                                "As some villagers begin to gather in the village \
+                                center, a scream is heard from the direction of \
+                                $target's house. The elderly villager who had \
+                                screamed points to the fence, on top of which, \
+                                the remains of $target are impaled, with his/her \
+                                intestines spilling onto the cobbles. \
+                                Apparently $target was trying to flee their \
+                                attacker...",
+    
+                                "When the villagers gather at the village \
+                                center, one comes running from the hanging tree,\
+                                screaming at others to follow. When they arrive \
+                                at the hanging tree, a gentle creaking echoes \
+                                through the air as the body of $target swings \
+                                gently in the breeze, its arms ripped off at \
+                                the shoulders. It appears the attacker was not \
+                                without a sense of irony...",
+    
+                                "As the village priest gathers the prayer books \
+                                for the morning's sermon, he notices a trickle \
+                                of blood snaking down the aisle. He looks upward\
+                                to see $target impaled on the crucifix - the \
+                                corpse has been gutted. He shouts for help, and \
+                                the other villagers pile into the church and \
+                                start arguing furiously..."]
+    
+    #message when seer is killed by a wolf
+    kill_die_seer_message = ["The first villager to arrive at the center shrieks\
+                             in horror - lying on the cobbles is a blood stained \
+                             Ouija Board, and atop it sits $target's head. It \
+                             appears $target the Seer had been seeking the \
+                             guidance of the spirits to root out the wolves, \
+                             but apparently the magic eight ball didn't see THIS\
+                             one coming..."]
+    
+    #message when guardian is killed by a wolf
+    kill_die_guardian_message = ["As one of the villagers passes $target's home,\
+                                 he sees a bloody mess in front of the door. \
+                                 After following the trail of blood and gore, \
+                                 he finds $target's body torn \
+                                 to pieces with herbs and powder flung all about.\
+                                 It's too bad $target the Guardian was unable \
+                                 to ward off these evil beings..."]
+    
+    #message when nobody is killed by a wolf
+    kill_none_message = ["The villagers gather the next morning in the village \
+                         center, to sighs of relief - it appears there was no \
+                         attack the previous night."]

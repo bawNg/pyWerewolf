@@ -2,6 +2,7 @@
 
 import sys
 import traceback
+import string
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
 
@@ -82,7 +83,10 @@ class WerewolfBot(SingleServerIRCBot):
         self.callbacks.run_nick(c, e)
 
     def on_mode(self, c, e):
-        pass#TODO: demoderate and voice everyone when no game
+        nick = nm_to_n(e.source())
+        if (nick == "ChanServ") and (e.arguments()[1] == c.get_nickname()):
+            if e.arguments()[0].startswith("+") and "o" in e.arguments()[0]:
+                self.reset_modes()
 
     ### Wrapper Methods ###
     def send_message(self, target, msg):
@@ -90,6 +94,11 @@ class WerewolfBot(SingleServerIRCBot):
 
     def send_notice(self, target, msg):
         self.connection.notice(target, msg)
+
+    def reset_modes(self):
+        voiced_nicks = self.channels[self.channel].voiced()
+        modes = "-m%s %s" % ('v'*(len(voiced_nicks)), string.join(voiced_nicks))
+        self.set_modes(modes)
 
     def set_modes(self, modes):
         self.connection.mode(self.channel, modes)
@@ -118,12 +127,12 @@ class WerewolfBot(SingleServerIRCBot):
 
     ### Game Management Methods ###
     def start_game(self, who, args):
-        if self.game == None:
+        if not self.game:
             self.game = Game(self, who)
             #TODO: add player in who started game
 
     def end_game(self):
-        if self.game != None:
+        if self.game:
             self.game.end()
             self.game = None
 
