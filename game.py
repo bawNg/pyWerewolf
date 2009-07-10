@@ -9,7 +9,7 @@ class Game(object):
     def __init__(self, bot, who):
         self.irc = bot
         self.c  = bot.connection
-        self.add_timer = bot.timers.add_timer
+        self.timers = bot.timers
         self.theme = Theme()
         self.players = {}
         self.wolves = []
@@ -122,8 +122,8 @@ class Game(object):
             self.theme.reset()
             self.theme.num = str(num_angels)
             self._chan_message(self.theme.role_num_angels_message)
-            
-            
+
+
     def _start(self, who):
         #register callbacks
         for cb in Commands.game:
@@ -136,24 +136,25 @@ class Game(object):
         self.theme.user = who
         self._chan_message(self.theme.game_start_message)
         self._add_player(who)
-        #TODO: start join end timer
+        self.timers.add_timer(15, self.join_end)
 
     def end(self):
         for cb in Commands.game:
             self.irc.callbacks.unreg_callback(cb)
         self.irc.callbacks.unreg_leave_callback()
         self.irc.callbacks.unreg_nick_callback()
-        #TODO: kill timers
+        self.timers.remove_all()
 
-    def join_end(self, t, t2):
-        if len(self.players) >= 3: #self.irc.set_moderated() #TODO: unvoice everyone
+    def join_end(self, t=None, t2=None):
+        if len(self.players) >= 3:
+            self.irc.reset_modes()
+            self.irc.set_moderated()
             self.mode = Mode.processing
             self.theme.reset()
             self.theme.num = str(len(self.players))
             self._chan_message(self.theme.join_success_message)
             self._assign_roles()
-            #TODO: Start Night
-            pass
+            self.night_start()
         else:
             self.theme.reset()
             self._chan_message(self.theme.join_fail_message)
@@ -161,24 +162,23 @@ class Game(object):
 
     def night_start(self):
         #TODO: tell alive roles what to do
-        #TODO: start timers
+        self.timers.add_timer(15, self.night_end)
         pass
 
     def night_end(self):
         self.mode = Mode.processing
         #TODO: output results of night
         if not self._check_win():
-            #TODO: start day
-            pass
+            self.day_start()
 
     def day_start(self):
         #TODO: Voice alive people
-        #TODO: start vote start timer
+        self.timers.add_timer(15, self.vote_start)
         pass
 
     def vote_start(self):
         #TODO: tell people how to vote
-        #TODO: start vote end timer
+        self.timers.add_timer(15, self.vote_end)
         pass
 
     def vote_end(self):
@@ -197,7 +197,8 @@ class Game(object):
                 self.theme.user = who
                 self.theme.num  = str(len(self.players))
                 self._chan_message(self.theme.join_new_message)
-                #TODO: update timeleft
+                if self.timers.get_timer(self.join_end).time_left < 10:
+                    self.timers.get_timer(self.join_end).set_timeleft(10)
             else:
                 self.theme.reset()
                 self.theme.user = who
@@ -216,7 +217,7 @@ class Game(object):
         else:
             #TODO: output invalid format
             pass
-    
+
     def kill(self, who, args):
         if len(args) == 1:
             if self.mode == Mode.night:
