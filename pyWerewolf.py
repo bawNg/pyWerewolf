@@ -81,6 +81,10 @@ class WerewolfBot(SingleServerIRCBot):
     def send_notice(self, target, msg):
         self.connection.notice(target, msg)
 
+    def voice_users(self, targets):
+        self.connection.mode(self.channel, "+%s %s" % \
+                             ('v'*len(targets), "".join(targets, " ")))
+
     ### Game Management Methods ###
     def start_game(self, who, args):
         if self.game == None:
