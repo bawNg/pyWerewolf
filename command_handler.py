@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
+from game_data import *
 
 class Command_Message:
     def __init__(self, e, msg):
@@ -33,10 +34,10 @@ class Command_Handler:
                     def cb(who, args):
                     where who is the person who ran the command
                     and args are the args to that command"""
-        self.callbacks[command.upper()] = callback
+        self.callbacks[command.lower()] = callback
 
     def unreg_callback(self, command):
-        command = command.upper()
+        command = command.lower()
         if command in self.callbacks:
             del self.callbacks[command]
 
@@ -81,16 +82,23 @@ class Command_Handler:
                     (msg, nick,  e.eventtype().upper())
 
         try:
-            command = msg.split()[0].upper()
+            command = msg.split()[0].lower()
             args = msg.split()[1:]
 
             if command in self.callbacks:
                 self.callbacks[command](nick, args)
+            elif command in Commands.game:
+                self.irc.send_notice(nick, msg.split()[0] + 
+                    " can only be used when a game is running." +
+                    " Start one with: !start")
+            else:
+                self.irc.send_notice(nick, msg.split()[0] + 
+                    " is an unknown command." +
+                    " For the list of commands type: !help")
         except Exception as exc:
-            self.irc.send_message
             print "Failed to process msg:", msg
             print "from:", nick
-            print "reason:", str(exc)
+            raise
 
     def process_nick(self, e):
         target  = e.target()
@@ -98,19 +106,16 @@ class Command_Handler:
         self.irc.send_message(self.irc.channel, nick + " has change their nick to " + target)
         if self.nick_cb != None:
             self.nick_cb(nick, target)
-        pass
 
     def process_join(self, e):
         nick    = nm_to_n(e.source())
         self.irc.send_message(self.irc.channel, nick + " has joined the channel")
         if self.join_cb != None:
             self.join_cb(nick)
-        pass
 
     def process_leave(self, e):
         nick    = nm_to_n(e.source())
         self.irc.send_message(self.irc.channel, nick + " has left the channel")
         if self.leave_cb != None:
             self.leave_cb(nick)
-        pass
 

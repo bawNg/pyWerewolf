@@ -1,5 +1,9 @@
 #!/usr/bin/env python
+
 from random import randint
+
+class Commands:
+    game = ["join", "vote", "kill", "guard", "see", "randplayer"]
 
 class Mode:
     join        = 0
@@ -30,6 +34,9 @@ class Theme:
         
 
     ### Game Text Messages ###
+
+    #Message format: <group or command>_<action of group or command>_message
+    
     #$user gets replaced by the current user
     #$target gets replaced by who is targeted by current user
     #$votes gets replaced by current vote tallies

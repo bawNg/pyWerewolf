@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys
+import traceback
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
 
@@ -17,11 +18,9 @@ class WerewolfBot(SingleServerIRCBot):
         self.game = None
         self.command_handler.reg_callback("start", self.start_game)
         #TODO: remove these callbacks
-        self.admin = ["BLAQ_PHOENIX", "SHADOWMASTER", "DEFI"] 
+        self.admin = ["blaq_phoenix", "shadowmaster", "defi"] 
         self.command_handler.reg_callback("die", self.cmd_die)
         self.command_handler.reg_callback("end", self.cmd_end)
-        import ircbot
-        print ircbot
 
     ### IRC Events ###
     def on_all_events(self, c, e):
@@ -96,13 +95,13 @@ class WerewolfBot(SingleServerIRCBot):
 
     ### Miscellaneous ###
     def cmd_die(self, who, args):
-        if who.upper() in self.admin:
+        if who.lower() in self.admin:
             self.die()
         else:
             self.send_message(self.channel, "Help! " + who + " tried to kill me :'(")
 
     def cmd_end(self, who, args):
-        if who.upper() in self.admin:
+        if who.lower() in self.admin:
             self.end_game()
         else:
             self.send_message(self.channel, "Help! " + who + " tried to end my fun :'(")
@@ -121,6 +120,11 @@ def main():
     except KeyboardInterrupt:
         print "^C - Exiting gracefully..."
         bot.disconnect(msg="Terminated at terminal")
+        sys.exit(0)
+    except Exception as exc:
+        bot.disconnect(msg="Unexpected Error. Sorry Folks.")
+        print "traceback:"
+        print traceback.print_exc()
         sys.exit(0)
 
 if __name__ == "__main__":

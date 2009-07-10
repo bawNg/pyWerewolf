@@ -29,8 +29,10 @@ class Game(object):
 
     def start(self, who):
         #register callbacks
-        reg = self.irc.command_handler.reg_callback
-        reg("join", self.join)
+        for cb in Commands.game:
+            self.irc.command_handler.reg_callback(cb, getattr(self, cb))
+        self.irc.command_handler.reg_leave_callback(self.player_leave)
+        self.irc.command_handler.reg_nick_callbakc(self.player_nick)
 
         #setup game info
         self.theme.user = who
@@ -40,8 +42,10 @@ class Game(object):
         self._add_player(who)
 
     def end(self):
-        unreg = self.irc.command_handler.unreg_callback
-        unreg("join")
+        for cb in Commands.game:
+            self.irc.command_handler.unreg_callback(cb, getattr(self, cb))
+        self.irc.command_handler.unreg_leave_callback(self.player_leave)
+        self.irc.command_handler.unreg_nick_callbakc(self.player_nick)
 
     def join(self, who, args):
         if self.mode == Mode.join:
@@ -50,4 +54,26 @@ class Game(object):
                 self._chan_message(self.theme.join_new_message)
             else:
                 self._notice(who, self.theme.join_old_message)
-        
+    
+    def vote(self, who, args):
+        pass
+    
+    def kill(self, who, args):
+        pass
+    
+    def guard(self, who, args):
+        pass
+
+    def see(self, who, args):
+        pass
+
+    def randplayer(self, who, args):
+        pass
+    
+    def player_leave(self, who):
+        pass
+    
+    def player_nick(self, old, new):
+        """player nick change"""
+        self.player_leave(old)
+
