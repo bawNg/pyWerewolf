@@ -30,9 +30,9 @@ class Game(object):
     def start(self, who):
         #register callbacks
         for cb in Commands.game:
-            self.irc.command_handler.reg_callback(cb, getattr(self, cb))
-        self.irc.command_handler.reg_leave_callback(self.player_leave)
-        self.irc.command_handler.reg_nick_callbakc(self.player_nick)
+            self.irc.reg_callback(cb, getattr(self, cb))
+        self.irc.reg_leave_callback(self.player_leave)
+        self.irc.reg_nick_callback(self.player_nick)
 
         #setup game info
         self.theme.user = who
@@ -43,9 +43,9 @@ class Game(object):
 
     def end(self):
         for cb in Commands.game:
-            self.irc.command_handler.unreg_callback(cb, getattr(self, cb))
-        self.irc.command_handler.unreg_leave_callback(self.player_leave)
-        self.irc.command_handler.unreg_nick_callbakc(self.player_nick)
+            self.irc.unreg_callback(cb, getattr(self, cb))
+        self.irc.unreg_leave_callback(self.player_leave)
+        self.irc.unreg_nick_callback(self.player_nick)
 
     def join(self, who, args):
         if self.mode == Mode.join:

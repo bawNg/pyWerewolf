@@ -15,12 +15,21 @@ class WerewolfBot(SingleServerIRCBot):
         self.channel = channel
         self.command_handler = Command_Handler(self)
         self.connection.add_global_handler("all_events", self.on_all_events, -100)
+
+        #callbacks
+        self.callbacks  = {}    #callbacks dictionary
+        self.nick_cb    = None  #nick callback      -when user renames
+        self.join_cb    = None  #join callback      - when user joins channel
+        self.leave_cb   = None  #leave callback     - when user leaves channel
+
+        #game
         self.game = None
-        self.command_handler.reg_callback("start", self.start_game)
+        self.reg_callback("start", self.start_game)
+        self.reg_callback("help", self.help)
         #TODO: remove these callbacks
         self.admin = ["blaq_phoenix", "shadowmaster", "defi"] 
-        self.command_handler.reg_callback("die", self.cmd_die)
-        self.command_handler.reg_callback("end", self.cmd_end)
+        self.reg_callback("die", self.cmd_die)
+        self.reg_callback("end", self.cmd_end)
 
     ### IRC Events ###
     def on_all_events(self, c, e):
@@ -61,19 +70,30 @@ class WerewolfBot(SingleServerIRCBot):
             c.privmsg(nick, "identify %s" % config.irc.password)
 
     def on_kick(self, c, e):
-        self.command_handler.process_leave(e)
+        self.on_quit(c, e)
 
     def on_part(self, c, e):
-        self.command_handler.process_leave(e)
-        
+        self.on_quit(c, e)
+
     def on_quit(self, c, e):
-        self.command_handler.process_leave(e)
+        nick    = nm_to_n(e.source())
+        self.send_message(self.channel, nick + " has left the channel")
+        if self.leave_cb != None:
+            self.leave_cb(nick)
 
     def on_join(self, c, e):
-        self.command_handler.process_join(e)
+        target  = e.target()
+        nick    = nm_to_n(e.source())
+        self.send_message(self.channel, nick + " has change their nick to " + target)
+        if self.nick_cb != None:
+            self.nick_cb(nick, target)
 
     def on_nick(self, c, e):
-        self.command_handler.process_nick(e)
+        target  = e.target()
+        nick    = nm_to_n(e.source())
+        self.send_message(self.channel, nick + " has change their nick to " + target)
+        if self.nick_cb != None:
+            self.nick_cb(nick, target)
 
     ### Wrapper Methods ###
     def send_message(self, target, msg):
@@ -93,10 +113,79 @@ class WerewolfBot(SingleServerIRCBot):
             self.game.end()
             self.game = None
 
+    ### Callbacks ###
+    def reg_callback(self, command, callback):
+        """command is the command that will be linked to the callback
+           callback is the function to be run when that command is ran
+                    callbacks have to be in the form of:
+                    def cb(who, args):
+                    where who is the person who ran the command
+                    and args are the args to that command"""
+        self.callbacks[command.lower()] = callback
+
+    def unreg_callback(self, command):
+        command = command.lower()
+        if command in self.callbacks:
+            del self.callbacks[command]
+
+    def reg_nick_callback(self, callback):
+        """callback is the function that will be called when a user
+           changes their nick.
+           callback must be of the form:
+                def cb(old, new):
+                where old is the old nick and new is the new one"""
+        self.nick_cb = callback
+
+    def unreg_nick_callback(self):
+        self.nick_cb = None
+
+    def reg_join_callback(self, callback):
+        """callback is the function that will be called when a user
+           joins the channel.
+           callback must be of the form:
+                def cb(user):
+                where user is the name of the user"""
+        self.join_cb = callback
+
+    def unreg_join_callback(self):
+        self.join_cb = None
+
+    def reg_leave_callback(self, callback):
+        """callback is the function that will be called when a user
+           leaves the channel.
+           callback must be of the form:
+                def cb(user):
+                where user is the name of the user"""
+        self.leave_cb = callback
+
+    def unreg_leave_callback(self):
+        self.leave_cb = None
+
+    def run_command(self, command, who, args):
+        if command in self.callbacks:
+            self.callbacks[command](who, args)
+        elif command in Commands.game:
+            self.send_notice(who, command + 
+                " can only be used when a game is running." +
+                " Start one with: !start")
+        else:
+            self.send_notice(who, command + 
+                " is an unknown command." +
+                " For the list of commands type: !help")
+
     ### Miscellaneous ###
+    def help(self, who, args):
+        self.send_notice(who, "To start of a game of Werewolf type: !start")
+        self.send_notice(who, "To join a running game," +
+                              " while joins are being accepted, type: !join")
+        self.send_notice(who, "While a game is running and talking is allowed," +
+                              " to name a random player type: !randplayer")
+        self.send_notice(who, "The rest of the commands will be explained in game" + 
+                              " just read my messages.")
+
     def cmd_die(self, who, args):
         if who.lower() in self.admin:
-            self.die()
+            self.die(msg="RAWR")
         else:
             self.send_message(self.channel, "Help! " + who + " tried to kill me :'(")
 
