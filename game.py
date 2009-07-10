@@ -49,8 +49,10 @@ class Game(object):
 
     def join(self, who, args):
         if self.mode == Mode.join:
-            if who not in self.players:
-                self.add_player(who)
+            if who.lower() not in self.players:
+                self._add_player(who)
+                self.theme.user = who
+                self.theme.num  = str(len(self.players))
                 self._chan_message(self.theme.join_new_message)
             else:
                 self._notice(who, self.theme.join_old_message)

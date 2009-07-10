@@ -117,7 +117,7 @@ class WerewolfBot(SingleServerIRCBot):
 
     def cmd_die(self, who, args):
         if self.is_admin(who):
-            self.die(msg="RAWR")
+            self.die(msg="rAwr")
         else:
             self.send_message(self.channel, "Help! " + who + " tried to kill me :'(")
 

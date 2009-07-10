@@ -14,12 +14,9 @@ class Mode:
 
 class Theme:
     def __init__(self):
-        self.user   = ""
-        self.target = ""
-        self.votes  = ""
-        self.wolves = ""
-        self.alive  = ""
-        self.tokens = ["user", "target", "votes", "wolves", "alive"]
+        self.tokens = ["num", "user", "role", "target", "votes", "wolves", "alive"]
+        for token in self.tokens:
+            setattr(self, token, "")
         self.token_delim = '$'
 
     def get_string(self, string_list):
@@ -37,7 +34,9 @@ class Theme:
 
     #Message format: <group or command>_<action of group or command>_message
     
+    #$num is the number of times an action has been executed like join
     #$user gets replaced by the current user
+    #$role gets the role of $user
     #$target gets replaced by who is targeted by current user
     #$votes gets replaced by current vote tallies
     #$wolves gets the names of the wolves
@@ -47,7 +46,7 @@ class Theme:
     game_start_message = ["$user started a new game!"]
 
     #message when someone new joins hunt
-    join_new_message = ["$user joined the hunt!"]
+    join_new_message = ["$num. $user joined the hunt!"]
     
     #message when someone tries to rejoin the hunt
     join_old_message = ["You have already joined the hunt."]
