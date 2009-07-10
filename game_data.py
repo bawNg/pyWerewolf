@@ -59,14 +59,50 @@ class Theme:
     #message when someone tries to rejoin the hunt
     join_old_message = ["You have already joined the hunt."]
     
+    #message when the joining has ended
+    join_ended_message = ["Sorry the joining has ended."]
+
     #message when the joining ends
     join_end_message = ["Joining ends."]
-    
+
+    #message when your role gets known
+    role_wolf_message = ["You are a wolf. rAwr!!!"]
+    role_seer_message = ["You are a seer."]
+    role_guardian_message = ["You are a guardian."]
+    role_angel_message = ["You are an Angel."]
+    role_villager_message = ["You are a villager."]
+
+    #message sent to wolf when there are more than one wolf
+    role_other_wolf_message = ["Your brethren is $wolves."]
+    role_other_wolves_message = ["Your brethren are: $wolves"]
+
+    #message sent when there are more than one of special roles
+    role_num_wolves_message = ["There are $num wolves."]
+    role_num_seers_message = ["There are $num seers."]
+    role_num_gaurdians_message = ["There are $num guardians."]
+    role_num_angels_message = ["There are $num angels."]
+
     #message when joining succeeds
     join_success_message = ["Congratulations you have $num players in the hunt!"]
 
     #message when joining fails
     join_fail_message = ["Sorry not enough players have joined."]
+    
+    #message when voting starts
+    vote_start_message = ["Voting has started. Type: !vote <target> to vote."]
+
+    #message when validly voted
+    vote_target_message = ["$user voted for $target. ($votes)"]
+
+    #message when not valid vote
+    vote_invalid_message = ["Sorry you can only vote during voting time."]
+    
+    #message when voting ends
+    vote_end_message = ["Voting has ended"]
+
+    #message when noone is killed by lynch vote
+    vote_die_noone_message = ["Noone was voted for. The good thingies \
+                               will not be happy"]
     
     #message when seer is killed by a lynch vote
     vote_die_seer_message = ["$target runs before the mob is organised, dashing \

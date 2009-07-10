@@ -72,7 +72,7 @@ class Angel(Villager):
 class Player:
     def __init__(self, name):
         self.role       = None  #Player's role
-        self.name       = name  #Player's actual nick preserving case
+        self.nick       = name  #Player's actual nick preserving case
         self.vote       = None  #Who player votes to lynch
         self.kill       = None  #Who player votes to kill
         self.see        = None  #Who player chooses to see

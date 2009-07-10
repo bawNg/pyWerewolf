@@ -12,6 +12,7 @@ class Game(object):
         self.add_timer = bot.timers.add_timer
         self.theme = Theme()
         self.players = {}
+        self.wolves = []
         self.mode = Mode.join
         self._start(who)
 
@@ -34,18 +35,22 @@ class Game(object):
 
     def _assign_roles(self):
         num_players     = len(self.players)
-        num_wolves      = num_players//5
+        num_wolves      = 2#num_players//5
         num_angels      = 1
         num_traitors    = 1
-        num_guards      = num_players//9
+        num_guardians   = num_players//9
         num_seers       = num_players//6
-        num_villagers   = num_players-num_wolves-num_angels-num_traitors- \
-                            num_guards-num_seers
+
         if num_wolves < 1:
             num_wolves = 1
         if num_seers < 1:
             num_seers = 1
-        if num_villagers < 0:
+
+        num_villagers   = num_players-num_wolves-num_angels-num_traitors- \
+                            num_guardians-num_seers
+        print num_players, num_wolves, num_angels, num_traitors, num_guardians, num_seers, num_villagers
+
+        if num_villagers <= 0:
             num_villagers += num_angels
             num_angels = 0
             num_villagers += num_traitors
@@ -58,19 +63,72 @@ class Game(object):
             roles.append(Angel())
         for i in xrange(num_traitors):
             roles.append(Traitor())
-        for i in xrange(num_guards):
-            roles.append(Guard())
+        for i in xrange(num_guardians):
+            roles.append(Guardian())
         for i in xrange(num_seers):
             roles.append(Seer())
         for i in xrange(num_villagers):
             roles.append(Villager())
-        random.shuffle(roles)
-        for i, player in enumerate(self.players.keys()):
-            self.players[player].role = roles[i]
-            print self.players[player].name, self.theme.role_names[roles[i].role],
-            print self.theme.role_names[roles[i].appears_as]
-            #TODO: Output player roles
 
+        random.shuffle(roles)
+        print num_players, num_wolves, num_angels, num_traitors, num_guardians, num_seers, num_villagers
+
+        for i, player in enumerate(self.players.keys()):
+            print player
+            self.players[player].role = roles[i]
+            print self.players[player].nick, self.theme.role_names[roles[i].role],
+            print self.theme.role_names[roles[i].appears_as]
+            role = roles[i].role
+            who = self.players[player].nick
+            self.theme.reset()
+            self.theme.user = who
+            if role == Role.villager:
+                self._notice(who, self.theme.role_villager_message)
+            elif role == Role.wolf:
+                self.wolves.append(who)
+                self._notice(who, self.theme.role_wolf_message)
+            elif role == Role.seer:
+                self._notice(who, self.theme.role_seer_message)
+            elif role == Role.guardian:
+                self._notice(who, self.theme.role_guardian_message)
+            elif role == Role.angel:
+                self._notice(who, self.theme.role_angel_message)
+
+        if num_wolves >= 2:
+            print "wolves:", self.wolves
+            for i in xrange(len(self.wolves)):
+                other_wolves = []
+                for j in xrange(i):
+                    other_wolves.append(self.wolves[j])
+                for j in xrange(i+1, len(self.wolves)):
+                    other_wolves.append(self.wolves[j])
+                print other_wolves
+                self.theme.reset()
+                self.theme.user = self.wolves[i]
+                who = self.wolves[i]
+                self.theme.wolves = " ".join(other_wolves)
+                if len(other_wolves) == 1:
+                    self._notice(who, self.theme.role_other_wolf_message)
+                else:
+                    self._notice(who, self.theme.role_other_wolves_message)
+        if num_wolves > 1:
+            self.theme.reset()
+            self.theme.num = str(num_wolves)
+            self._chan_message(self.theme.role_num_wolves_message)
+        if num_seers > 1:
+            self.theme.reset()
+            self.theme.num = str(num_seers)
+            self._chan_message(self.theme.role_num_seers_message)
+        if num_guardians > 1:
+            self.theme.reset()
+            self.theme.num = str(num_guardians)
+            self._chan_message(self.theme.role_num_guardians_message)
+        if num_angels > 1:
+            self.theme.reset()
+            self.theme.num = str(num_angels)
+            self._chan_message(self.theme.role_num_angels_message)
+            
+            
     def _start(self, who):
         #register callbacks
         for cb in Commands.game:
@@ -96,6 +154,7 @@ class Game(object):
         if len(self.players) >= 3:
             #self.irc.set_moderated()
             #TODO: unvoice everyone
+            self.mode = Mode.processing
             self.theme.reset()
             self.theme.num = str(len(self.players))
             self._chan_message(self.theme.join_success_message)
@@ -113,6 +172,7 @@ class Game(object):
         pass
 
     def night_end(self):
+        self.mode = Mode.processing
         #TODO: output results of night
         if not self._check_win():
             #TODO: start day
@@ -149,6 +209,8 @@ class Game(object):
                 self.theme.reset()
                 self.theme.user = who
                 self._notice(who, self.theme.join_old_message)
+        else:
+            self._notice(who, self.theme.join_ended_message)
 
     def vote(self, who, args):
         if len(args) == 1:
@@ -202,7 +264,7 @@ class Game(object):
         if self.mode in [Mode.day_talk, Mode.day_vote]:
             tplayers = []
             for player in self.players:
-                tplayers.append(player.name)
+                tplayers.append(player.nick)
             self.theme.user = tplayers[random.randint(0, len(tplayers)-1)]
             #TODO: print to channnel the random name
 
