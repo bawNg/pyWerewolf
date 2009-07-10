@@ -85,7 +85,7 @@ class WerewolfBot(SingleServerIRCBot):
     ### Game Management Methods ###
     def start_game(self, who, args):
         if self.game == None:
-            self.game = Game(self)
+            self.game = Game(self, who)
             #TODO: add player in who started game
     
     def end_game(self):

@@ -5,7 +5,7 @@ from player import *
 import config
 
 class Game(object):
-    def __init__(self, bot):
+    def __init__(self, bot, who):
         bot.send_message(bot.channel, "Game started")
         self.irc = bot
         self.c  = bot.connection
