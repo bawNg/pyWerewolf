@@ -118,12 +118,12 @@ class WerewolfBot(SingleServerIRCBot):
 
     ### Game Management Methods ###
     def start_game(self, who, args):
-        if self.game == None:
+        if not self.game:
             self.game = Game(self, who)
             #TODO: add player in who started game
 
     def end_game(self):
-        if self.game != None:
+        if self.game:
             self.game.end()
             self.game = None
 
