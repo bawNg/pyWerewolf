@@ -48,7 +48,6 @@ class Game(object):
 
         num_villagers   = num_players-num_wolves-num_angels-num_traitors- \
                             num_guardians-num_seers
-        print num_players, num_wolves, num_angels, num_traitors, num_guardians, num_seers, num_villagers
 
         if num_villagers <= 0:
             num_villagers += num_angels
@@ -71,10 +70,8 @@ class Game(object):
             roles.append(Villager())
 
         random.shuffle(roles)
-        print num_players, num_wolves, num_angels, num_traitors, num_guardians, num_seers, num_villagers
 
         for i, player in enumerate(self.players.keys()):
-            print player
             self.players[player].role = roles[i]
             print self.players[player].nick, self.theme.role_names[roles[i].role],
             print self.theme.role_names[roles[i].appears_as]
@@ -95,14 +92,12 @@ class Game(object):
                 self._notice(who, self.theme.role_angel_message)
 
         if num_wolves >= 2:
-            print "wolves:", self.wolves
             for i in xrange(len(self.wolves)):
                 other_wolves = []
                 for j in xrange(i):
                     other_wolves.append(self.wolves[j])
                 for j in xrange(i+1, len(self.wolves)):
                     other_wolves.append(self.wolves[j])
-                print other_wolves
                 self.theme.reset()
                 self.theme.user = self.wolves[i]
                 who = self.wolves[i]
@@ -151,9 +146,7 @@ class Game(object):
         #TODO: kill timers
 
     def join_end(self, t, t2):
-        if len(self.players) >= 3:
-            #self.irc.set_moderated()
-            #TODO: unvoice everyone
+        if len(self.players) >= 3: #self.irc.set_moderated() #TODO: unvoice everyone
             self.mode = Mode.processing
             self.theme.reset()
             self.theme.num = str(len(self.players))

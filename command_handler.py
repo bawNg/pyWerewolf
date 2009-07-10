@@ -24,6 +24,8 @@ class Command_Handler:
         self.c  = bot.connection
 
     def process_command(self, e, msg):
+        if msg.strip() == "":
+            return
         target  = e.target()
         nick    = nm_to_n(e.source())
 
