@@ -22,7 +22,6 @@ class WerewolfBot(SingleServerIRCBot):
         self.callbacks.reg_callback("start", self.start_game)
         self.callbacks.reg_callback("help", self.help)
         #TODO: remove these callbacks
-        self.callbacks.admin = ["blaq_phoenix", "shadowmaster", "defi"] 
         self.callbacks.reg_callback("die", self.cmd_die)
         self.callbacks.reg_callback("end", self.cmd_end)
 
