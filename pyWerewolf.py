@@ -71,7 +71,7 @@ class WerewolfBot(SingleServerIRCBot):
 
     def on_quit(self, c, e):
         self.callbacks.run_leave(c, e)
-        
+
     def on_join(self, c, e):
         self.callbacks.run_join(c, e)
 
@@ -85,9 +85,30 @@ class WerewolfBot(SingleServerIRCBot):
     def send_notice(self, target, msg):
         self.connection.notice(target, msg)
 
-    def voice_users(self, targets):
-        self.connection.mode(self.channel, "+%s %s" % \
-                             ('v'*len(targets), "".join(targets, " ")))
+    def set_modes(self, modes):
+        self.connection.mode(self.channel, modes)
+
+    def set_moderated(self, moderated=True):
+        self.set_modes("%sm" % '+' if moderated else '-')
+
+    def voice_users(targets):
+        for start in range(0, len(targets), 12):
+            end = start+12
+            if len(targets) < end: end = len(targets)
+            nicks = ""
+            for t in targets[start:end]: nicks += "%s " % t
+            modes = "+%s %s" % ('v'*(end-start), nicks)
+            self.set_modes(modes)
+
+    def devoice_users(targets, unmoderate=False):
+        for start in range(0, len(targets), 12):
+            end = start+12
+            if len(targets) < end: end = len(targets)
+            nicks = ""
+            for t in targets[start:end]: nicks += "%s " % t
+            modes = "+%s %s" % ('v'*(end-start), nicks)
+            if unmoderate: modes = "+m%s" % modes[1:]
+            self.set_modes(modes)
 
     ### Game Management Methods ###
     def start_game(self, who, args):
@@ -107,7 +128,7 @@ class WerewolfBot(SingleServerIRCBot):
                               " while joins are being accepted, type: !join")
         self.send_notice(who, "While a game is running and talking is allowed," +
                               " to name a random player type: !randplayer")
-        self.send_notice(who, "The rest of the commands will be explained in game" + 
+        self.send_notice(who, "The rest of the commands will be explained in game" +
                               " just read my messages.")
 
     def is_admin(self, nick):
