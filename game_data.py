@@ -50,4 +50,50 @@ class Theme:
     
     #message when someone tries to rejoin the hunt
     join_old_message = ["You have already joined the hunt."]
+    
+    #message when seer is killed by a lynch vote
+    vote_die_seer_message = ["$target runs before the mob is organised, dashing \
+                             away from the village. Tackled to the ground near \
+                             to the lake, $target is tied to a log, screaming, \
+                             and thrown into the water. With no means of escape,\
+                             $target the Seer drowns, but as the villagers watch, \
+                             tarot cards float to the surface and their mistake \
+                             is all too apparent..."]
+    
+    #message when gaurdian is killed by a lynch vote
+    vote_die_guardian_message = ["$target runs before the mob is organised, \
+                                 running for the safety of home. Just before \
+                                 reaching home, $target is hit with a large \
+                                 stone, then another. With no means of escape, \
+                                 $target is stoned to death, his body crushed. \
+                                 One curious villager enters the house to find \
+                                 proof that $target was a Guardian after all..."]
+    
+    #message when wolf is killed by a lynch vote
+    vote_die_wolf_message = ["After coming to a decision, $target is quickly \
+                             dragged from the crowd and dragged to the hanging \
+                             tree. $target is strung up, and the block kicked \
+                             from beneath their feet. There is a yelp of pain, \
+                             but $target's neck doesn't snap, and fur begins to \
+                             sprout from his/her body. A gunshot rings out, as \
+                             a villager puts a silver bullet in the beast's \
+                             head..."]
+    
+    #message when villager is killed by a lynch vote
+    vote_die_villager_message = ["The air thick with adrenaline, the villagers \
+                                 grab $target who struggles furiously, pleading \
+                                 innocence, but the screams fall on deaf ears. \
+                                 $target is dragged to the stake at the edge of \
+                                 the village, and burned alive. But the \
+                                 villagers shouts and cheers fade as they \
+                                 realise the moon is already up - $target was \
+                                 not a werewolf after all...",
+                                "Realising the angry mob is turning, $target \
+                                tries to run, but is quickly seized upon. $target\
+                                is strung up to the hanging tree, and a hunter \
+                                readies his rifle with a silver slug, as the \
+                                block is kicked from beneath them. But there is \
+                                a dull snap, and $target hangs, silent, \
+                                motionless. The silent villagers quickly realise\
+                                their grave mistake..."]
 
