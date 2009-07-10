@@ -35,7 +35,7 @@ class Game(object):
 
     def _assign_roles(self):
         num_players     = len(self.players)
-        num_wolves      = 2#num_players//5
+        num_wolves      = num_players//5
         num_angels      = 1
         num_traitors    = 1
         num_guardians   = num_players//9
@@ -79,17 +79,9 @@ class Game(object):
             who = self.players[player].nick
             self.theme.reset()
             self.theme.user = who
-            if role == Role.villager:
-                self._notice(who, self.theme.role_villager_message)
-            elif role == Role.wolf:
+            self._notice(who, self.theme.role_message[role])
+            if role == Role.wolf:
                 self.wolves.append(who)
-                self._notice(who, self.theme.role_wolf_message)
-            elif role == Role.seer:
-                self._notice(who, self.theme.role_seer_message)
-            elif role == Role.guardian:
-                self._notice(who, self.theme.role_guardian_message)
-            elif role == Role.angel:
-                self._notice(who, self.theme.role_angel_message)
 
         if num_wolves >= 2:
             for i in xrange(len(self.wolves)):
@@ -103,26 +95,38 @@ class Game(object):
                 who = self.wolves[i]
                 self.theme.wolves = " ".join(other_wolves)
                 if len(other_wolves) == 1:
-                    self._notice(who, self.theme.role_other_wolf_message)
+                    self._notice(who, self.theme.role_other_message[Role.wolf])
                 else:
-                    self._notice(who, self.theme.role_other_wolves_message)
+                    self._notice(who, self.theme.role_others_message[Role.wolf])
         if num_wolves > 1:
             self.theme.reset()
             self.theme.num = str(num_wolves)
-            self._chan_message(self.theme.role_num_wolves_message)
+            self._chan_message(self.theme.role_num_message[Role.wolf])
         if num_seers > 1:
             self.theme.reset()
             self.theme.num = str(num_seers)
-            self._chan_message(self.theme.role_num_seers_message)
+            self._chan_message(self.theme.role_num_message[Role.seer])
         if num_guardians > 1:
             self.theme.reset()
             self.theme.num = str(num_guardians)
-            self._chan_message(self.theme.role_num_guardians_message)
+            self._chan_message(self.theme.role_num_message[Role.guardian])
         if num_angels > 1:
             self.theme.reset()
             self.theme.num = str(num_angels)
-            self._chan_message(self.theme.role_num_angels_message)
+            self._chan_message(self.theme.role_num_message[Role.angel])
             
+    def _is_alive(self, role):
+        for player in self.players:
+            if role == self.players[player].role.role:
+                return True
+        return False
+
+    def _num(self, role):
+        ans = 0
+        for player in self.players:
+            if role == self.players[player].role.role:
+                ans += 1
+        return ans
             
     def _start(self, who):
         #register callbacks
@@ -138,6 +142,9 @@ class Game(object):
         self._add_player(who)
         #TODO: start join end timer
 
+    def restart(self, who, args):
+        self._notice(who, self.theme.game_started_message)
+
     def end(self):
         for cb in Commands.game:
             self.irc.callbacks.unreg_callback(cb)
@@ -146,21 +153,34 @@ class Game(object):
         #TODO: kill timers
 
     def join_end(self, t, t2):
-        if len(self.players) >= 3: #self.irc.set_moderated() #TODO: unvoice everyone
+        if len(self.players) >= 3: 
+            self.mode = Mode.processing
+            #self.irc.set_moderated() 
+            #TODO: unvoice everyone
             self.mode = Mode.processing
             self.theme.reset()
             self.theme.num = str(len(self.players))
+            self._chan_message(self.theme.join_end_message)
             self._chan_message(self.theme.join_success_message)
             self._assign_roles()
-            #TODO: Start Night
-            pass
+            self.theme.reset()
+            self._chan_message(self.theme.night_first_message)
+            self.night_start()
         else:
             self.theme.reset()
             self._chan_message(self.theme.join_fail_message)
             self.irc.end_game()
 
     def night_start(self):
-        #TODO: tell alive roles what to do
+        self.theme.reset()
+        self.theme.num = 75
+        self.mode = Mode.night
+        for role in [Role.wolf, Role.seer, Role.guardian]:
+            if self._is_alive(role):
+                if self._num(role) == 1:
+                    self._chan_message(self.theme.night_player_message[role])
+                else:
+                    self._chan_message(self.theme.night_players_message[role])
         #TODO: start timers
         pass
 
@@ -169,6 +189,9 @@ class Game(object):
         #TODO: output results of night
         if not self._check_win():
             #TODO: start day
+            pass
+        else:
+            #TODO: end game 
             pass
 
     def day_start(self):
@@ -186,6 +209,7 @@ class Game(object):
         #TODO: tally votes
         #TODO: kill player
         #TODO: check win
+        #TODO: show night after vote message
         #TODO: start_night
         pass
 

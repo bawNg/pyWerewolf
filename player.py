@@ -6,6 +6,8 @@ class Role:
     seer        = 2
     guardian    = 3
     angel       = 4
+    noone       = 5
+    num         = 6
 
 class Abilities:
     vote    = 0

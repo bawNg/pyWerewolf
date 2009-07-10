@@ -129,7 +129,8 @@ class WerewolfBot(SingleServerIRCBot):
     def start_game(self, who, args):
         if not self.game:
             self.game = Game(self, who)
-            #TODO: add player in who started game
+        else:
+            self.game.restart(who, args)
 
     def end_game(self):
         if self.game:

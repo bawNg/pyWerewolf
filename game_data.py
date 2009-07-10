@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from random import randint
+from player import *
 
 class Commands:
     game = ["join", "vote", "kill", "guard", "see", "randplayer", "join_end"]
@@ -51,7 +52,8 @@ class Theme:
     #$alive gets the alive villagers
 
     #message when game starts
-    game_start_message = ["$user started a new game!"]
+    game_start_message = ["$user started a new game! You have $num seconds to join!"]
+    game_started_message = ["Game already running."]
 
     ### JOIN MESSAGES ###
 
@@ -68,21 +70,25 @@ class Theme:
     join_end_message = ["Joining ends."]
 
     #message when your role gets known
-    role_wolf_message = ["You are a wolf. rAwr!!!"]
-    role_seer_message = ["You are a seer."]
-    role_guardian_message = ["You are a guardian."]
-    role_angel_message = ["You are an Angel."]
-    role_villager_message = ["You are a villager."]
+    role_message            = [None for i in xrange(Role.num)]
+    role_message[Role.wolf] = ["You are a wolf. rAwr!!!"]
+    role_message[Role.seer]      = ["You are a seer."]
+    role_message[Role.guardian]  = ["You are a guardian."]
+    role_message[Role.angel]     = ["You are an Angel."]
+    role_message[Role.villager]  = ["You are a villager."]
 
     #message sent to wolf when there are more than one wolf
-    role_other_wolf_message = ["Your brethren is $wolves."]
-    role_other_wolves_message = ["Your brethren are: $wolves"]
+    role_other_message              = [None for i in xrange(Role.num)]
+    role_other_message[Role.wolf]   = ["Your brethren is $wolves."]
+    role_others_message             = [None for i in xrange(Role.num)]
+    role_others_message[Role.wolf]  = ["Your brethren are: $wolves"]
 
     #message sent when there are more than one of special roles
-    role_num_wolves_message = ["There are $num wolves."]
-    role_num_seers_message = ["There are $num seers."]
-    role_num_gaurdians_message = ["There are $num guardians."]
-    role_num_angels_message = ["There are $num angels."]
+    role_num_message                = [None for i in xrange(Role.num)]
+    role_num_message[Role.wolf]     = ["There are $num wolves."]
+    role_num_message[Role.seer]     = ["There are $num seers."]
+    role_num_message[Role.guardian] = ["There are $num guardians."]
+    role_num_message[Role.angel]    = ["There are $num angels."]
 
     #message when joining succeeds
     join_success_message = ["Congratulations you have $num players in the hunt!"]
@@ -90,6 +96,41 @@ class Theme:
     #message when joining fails
     join_fail_message = ["Sorry not enough players have joined."]
     
+    ### NIGHT MESSAGES ###
+    
+    #message before night after joining ends
+    night_first_message = ["Night descends over the unsuspecting village."]
+    
+    #message after voting and before night
+    night_after_message = ["Villagers goes to uneasy sleep."]
+
+    #message for abilities at night
+    night_player_message = [None for i in xrange(Role.num)]
+    night_players_message = [None for i in xrange(Role.num)]
+    night_player_message[Role.seer] = ["Seer type: /msg $user see " + 
+                                       "<target> to see. You have $num seconds."]
+    night_players_message[Role.seer] = ["Seers type: /msg $user see "+
+                                        "<target> to see. You have $num seconds."]
+
+    #message for wolves at night
+    night_player_message[Role.wolf] = ["Wolf type: /msg $user kill "+
+                                       "<target> to kill. You have $num seconds."]
+    night_players_message[Role.wolf] = ["Wolves type: /msg $user kill "+
+                                        "<target> to kill. You have $num seconds."]
+
+    #message for guardians at night
+    night_player_message[Role.guardian] = ["Guardian type: /msg $user "+
+                                           "guard <target> to guard. You have $num "+
+                                           "seconds."]
+    night_players_message[Role.guardian] = ["Guardians type: /msg $user "+
+                                            "guard <target> to guard. You have $num "+
+                                            "seconds."]
+
+    ### DAY START MESSAGES ###
+    
+    #message at start of day
+    day_start_message = ["Make your accusations."]
+
     ### VOTE MESSAGES ###
 
     #message when voting starts
@@ -102,116 +143,196 @@ class Theme:
     vote_invalid_message = ["Sorry you can only vote during voting time."]
     
     #message when voting ends
-    vote_end_message = ["Voting has ended"]
+    vote_end_message = ["Voting has ended."]
 
-    #message when noone is killed by lynch vote
-    vote_die_noone_message = ["Noone was voted for. The good thingies \
-                               will not be happy"]
     ### LYNCH MESSAGES ###
     
+    vote_die_message = [None for i in xrange(Role.num)]
     #message when seer is killed by a lynch vote
-    vote_die_seer_message = ["$target runs before the mob is organised, dashing \
-                             away from the village. Tackled to the ground near \
-                             to the lake, $target is tied to a log, screaming, \
-                             and thrown into the water. With no means of escape,\
-                             $target the Seer drowns, but as the villagers watch, \
-                             tarot cards float to the surface and their mistake \
-                             is all too apparent..."]
+    vote_die_message[Role.seer] = ["$target runs before the mob is organised, "+
+                                   "dashing away from the village. Tackled to "+
+                                   "the ground near the lake, $target is tied "+
+                                   "to a log, screaming, thrown into the water. "+
+                                   "With no means of escape, $target the Seer "+
+                                   "drowns, but as the villagers watch, cards "+
+                                   "float to the surface and their mistake "+
+                                   "is all too apparent..."]
     
     #message when gaurdian is killed by a lynch vote
-    vote_die_guardian_message = ["$target runs before the mob is organised, \
-                                 running for the safety of home. Just before \
-                                 reaching home, $target is hit with a large \
-                                 stone, then another. With no means of escape, \
-                                 $target is stoned to death, his body crushed. \
-                                 One curious villager enters the house to find \
-                                 proof that $target was a Guardian after all..."]
+    vote_die_message[Role.guardian] = ["$target runs before the mob is organised, "+
+                                       "running for the safety of home. Just before "+
+                                       "reaching home, $target is hit with a large "+
+                                       "stone, then another. With no means of escape, "+
+                                       "$target is stoned to death, his body crushed. "+
+                                       "One curious villager enters the house to find "+
+                                       "proof that $target was a Guardian after all..."]
     
     #message when wolf is killed by a lynch vote
-    vote_die_wolf_message = ["After coming to a decision, $target is quickly \
-                             dragged from the crowd and dragged to the hanging \
-                             tree. $target is strung up, and the block kicked \
-                             from beneath their feet. There is a yelp of pain, \
-                             but $target's neck doesn't snap, and fur begins to \
-                             sprout from his/her body. A gunshot rings out, as \
-                             a villager puts a silver bullet in the beast's \
-                             head..."]
+    vote_die_message[Role.wolf] = ["After coming to a decision, $target is quickly "+
+                                   "dragged from the crowd and dragged to the hanging "+
+                                   "tree. $target is strung up, and the block kicked "+
+                                   "from beneath their feet. There is a yelp of pain, "+
+                                   "but $target's neck doesn't snap, and fur begins to "+
+                                   "sprout from his/her body. A gunshot rings out, as "+
+                                   "a villager puts a silver bullet in the beast's "+
+                                   "head..."]
     
     #message when villager is killed by a lynch vote
-    vote_die_villager_message = ["The air thick with adrenaline, the villagers \
-                                 grab $target who struggles furiously, pleading \
-                                 innocence, but the screams fall on deaf ears. \
-                                 $target is dragged to the stake at the edge of \
-                                 the village, and burned alive. But the \
-                                 villagers shouts and cheers fade as they \
-                                 realise the moon is already up - $target was \
-                                 not a werewolf after all...",
+    vote_die_message[Role.villager] = ["The air thick with adrenaline, the villagers "+
+                                       "grab $target who struggles furiously, pleading "+
+                                       "innocence, but the screams fall on deaf ears. "+
+                                       "$target is dragged to the stake at the edge of "+
+                                       "the village, and burned alive. But the "+
+                                       "villagers shouts and cheers fade as they "+
+                                       "realise the moon is already up - $target was "+
+                                       "not a werewolf after all...",
     
-                                "Realising the angry mob is turning, $target \
-                                tries to run, but is quickly seized upon. $target\
-                                is strung up to the hanging tree, and a hunter \
-                                readies his rifle with a silver slug, as the \
-                                block is kicked from beneath them. But there is \
-                                a dull snap, and $target hangs, silent, \
-                                motionless. The silent villagers quickly realise\
-                                their grave mistake..."]
+                                      "Realising the angry mob is turning, $target "+
+                                      "tries to run, but is quickly seized upon. $target "+
+                                      "is strung up to the hanging tree, and a hunter "+
+                                      "readies his rifle with a silver slug, as the "+
+                                      "block is kicked from beneath them. But there is "+
+                                      "a dull snap, and $target hangs, silent, "+
+                                      "motionless. The silent villagers quickly realise "+
+                                      "their grave mistake..."]
     
+    #message when noone is killed by lynch vote
+    vote_die_message[Role.noone] = ["Noone was voted for. The good thingies "+
+                                    "will not be happy"]
+
     ### KILL MESSAGES ###
     
+    #message when single wolf kills
+    kill_wolf_message = ["You have selected $target for your feast."]
+
+    #message when multiple wolves kill
+    kill_wolves_message = ["You have selected $target for your feast, but must "+
+                           "wait for brethren."]
+
+    #message when a wolf tries to attack another wolf
+    kill_invalid_message = ["$target is on of your brethren you can't attack them."]
+
+    kill_die_message = [None for i in xrange(Role.num)]
     #message when villager is killed by a wolf
-    kill_die_villager_message = ["The villagers gather the next morning in the \
-                                 village center, but $target does not appear. \
-                                 The villagers converge on $target's home and \
-                                 find him/her decapitated in their bed. After \
-                                 carrying the body to the church, the villagers,\
-                                 now hysterical, return to the village center \
-                                 to decide how to retaliate...",
+    kill_die_message[Role.villager] = ["The villagers gather the next morning in the "+
+                                 "village center, but $target does not appear. "+
+                                 "The villagers converge on $target's home and "+
+                                 "find him/her decapitated in their bed. After "+
+                                 "carrying the body to the church, the villagers, "+
+                                 "now hysterical, return to the village center "+
+                                 "to decide how to retaliate...",
     
-                                "As some villagers begin to gather in the village \
-                                center, a scream is heard from the direction of \
-                                $target's house. The elderly villager who had \
-                                screamed points to the fence, on top of which, \
-                                the remains of $target are impaled, with his/her \
-                                intestines spilling onto the cobbles. \
-                                Apparently $target was trying to flee their \
-                                attacker...",
+                                "As some villagers begin to gather in the village "+
+                                "center, a scream is heard from the direction of "+
+                                "$target's house. The elderly villager who had "+
+                                "screamed points to the fence, on top of which, "+
+                                "the remains of $target are impaled, with his/her "+
+                                "intestines spilling onto the cobbles. "+
+                                "Apparently $target was trying to flee their "+
+                                "attacker...",
     
-                                "When the villagers gather at the village \
-                                center, one comes running from the hanging tree,\
-                                screaming at others to follow. When they arrive \
-                                at the hanging tree, a gentle creaking echoes \
-                                through the air as the body of $target swings \
-                                gently in the breeze, its arms ripped off at \
-                                the shoulders. It appears the attacker was not \
-                                without a sense of irony...",
+                                "When the villagers gather at the village "+
+                                "center, one comes running from the hanging tree, "+
+                                "screaming at others to follow. When they arrive "+
+                                "at the hanging tree, a gentle creaking echoes "+
+                                "through the air as the body of $target swings "+
+                                "gently in the breeze, its arms ripped off at "+
+                                "the shoulders. It appears the attacker was not "+
+                                "without a sense of irony...",
     
-                                "As the village priest gathers the prayer books \
-                                for the morning's sermon, he notices a trickle \
-                                of blood snaking down the aisle. He looks upward\
-                                to see $target impaled on the crucifix - the \
-                                corpse has been gutted. He shouts for help, and \
-                                the other villagers pile into the church and \
-                                start arguing furiously..."]
+                                "As the village priest gathers the prayer books "+
+                                "for the morning's sermon, he notices a trickle "+
+                                "of blood snaking down the aisle. He looks upward "+
+                                "to see $target impaled on the crucifix - the "+
+                                "corpse has been gutted. He shouts for help, and "+
+                                "the other villagers pile into the church and "+
+                                "start arguing furiously..."]
     
     #message when seer is killed by a wolf
-    kill_die_seer_message = ["The first villager to arrive at the center shrieks\
-                             in horror - lying on the cobbles is a blood stained \
-                             Ouija Board, and atop it sits $target's head. It \
-                             appears $target the Seer had been seeking the \
-                             guidance of the spirits to root out the wolves, \
-                             but apparently the magic eight ball didn't see THIS\
-                             one coming..."]
+    kill_die_message[Role.seer] = ["The first villager to arrive at the center shrieks "+
+                             "in horror - lying on the cobbles is a blood stained "+
+                             "Ouija Board, and atop it sits $target's head. It "+
+                             "appears $target the Seer had been seeking the "+
+                             "guidance of the spirits to root out the wolves, "+
+                             "but apparently the magic eight ball didn't see THIS "+
+                             "one coming..."]
     
     #message when guardian is killed by a wolf
-    kill_die_guardian_message = ["As one of the villagers passes $target's home,\
-                                 he sees a bloody mess in front of the door. \
-                                 After following the trail of blood and gore, \
-                                 he finds $target's body torn \
-                                 to pieces with herbs and powder flung all about.\
-                                 It's too bad $target the Guardian was unable \
-                                 to ward off these evil beings..."]
+    kill_die_message[Role.guardian] = ["As one of the villagers passes $target's home, "+
+                                 "he sees a bloody mess in front of the door. "+
+                                 "After following the trail of blood and gore, "+
+                                 "he finds $target's body torn "+
+                                 "to pieces with herbs and powder flung all about. "+
+                                 "It's too bad $target the Guardian was unable "+
+                                 "to ward off these evil beings..."]
     
     #message when nobody is killed by a wolf
-    kill_none_message = ["The villagers gather the next morning in the village \
-                         center, to sighs of relief - it appears there was no \
-                         attack the previous night."]
+    kill_die_message[Role.noone] = ["The villagers gather the next morning in the "+
+                         "village "+
+                         "center, to sighs of relief - it appears there was no "+
+                         "attack the previous night."]
+
+
+    ### SEE(R) MESSAGES ###
+    
+    #message when seer enters target
+    see_target_message = ["Your predictions will be revealed to you at dawn."]
+
+    see_message = [None for i in xrange(Role.num)]
+    #message when seer sees wolf
+    see_message[Role.wolf] = ["$target is a filthy wolf."]
+    
+    #message when seer sees angel
+    see_message[Role.angel] = ["$target is an angel."]
+
+    #message when seer sees guardian
+    see_message[Role.guardian] = ["$target is a guardian."]
+
+    #message when seer sees seer
+    see_message[Role.seer] = ["$target is a seer."]
+
+    #message when seer sees villager
+    see_message[Role.villager] = ["$target is a villager."]
+
+    ### GUARD MESSAGES ###
+    
+    guard_target_message = ["You have chosen to guard $target from wolf attacks."]
+
+    ### GOOD KILL ###
+    
+    good_defy_message = [None for i in xrange(Role.num)]
+    good_defy_message[Role.villager] = ["$target the villager died for defying "+
+                                        "the good."]
+    good_defy_message[Role.wolf]     = ["$target the wolf died for defying the good."]
+    good_defy_message[Role.seer]     = ["$target the seer died for defying the good."]
+    good_defy_message[Role.guardian] = ["$target the guardian died for defying the "+
+                                        "good."]
+    good_defy_message[Role.angel]    = ["$target the wolf died for defying the good."]
+    
+    ### NICK KILL ###
+    
+    nick_kill_message = [None for i in xrange(Role.num)]
+    nick_kill_message[Role.villager] = ["$target the villager got killed for "+
+                                        "changing nicks."]
+    nick_kill_message[Role.wolf]     = ["$target the wolf got killed for changing "+
+                                        "nicks."]
+    nick_kill_message[Role.seer]     = ["$target the seer got killed for changing "+
+                                        "nicks."]
+    nick_kill_message[Role.guardian] = ["$target the guardian got killed for "+
+                                        "changing nicks."]
+    nick_kill_message[Role.angel]    = ["$target the angel got killed for changing "+
+                                        "nicks."]
+
+    ### LEAVE KILL ###
+    
+    leave_kill_message = [None for i in xrange(Role.num)]
+    leave_kill_message[Role.villager] = ["$target the villager got killed for "+
+                                         "leaving the game."]
+    leave_kill_message[Role.wolf]     = ["$target the wolf got killed for leaving "+
+                                         "the game."]
+    leave_kill_message[Role.seer]     = ["$target the seer got killed for leaving "+
+                                         "the game."]
+    leave_kill_message[Role.guardian] = ["$target the guardian got killed for "+
+                                         "leaving the game."]
+    leave_kill_message[Role.angel]    = ["$target the angel got killed for "+
+                                         "leaving the game."]
