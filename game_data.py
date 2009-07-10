@@ -29,6 +29,8 @@ class Theme:
                                     getattr(self, token))
         return result
         
+    ### Role Names ###
+    role_names = ["Villager", "Werewolf", "Seer", "Guardian", "Angel"]
 
     ### Game Text Messages ###
 
