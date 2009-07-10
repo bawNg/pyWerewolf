@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-#werewolf game logic
 from player import *
 import config
 from game_data import *
+import random
 
 class Game(object):
     def __init__(self, bot, who):
@@ -22,10 +22,17 @@ class Game(object):
                              self.theme.get_string(message_list))
         
     def _add_player(self, who):
-        self.players[who.lower()] = None
+        self.players[who.lower()] = (None, who)
 
     def _rem_player(self, who):
         pass #remove player from player list and check if game ended
+
+    def _can_start_game(self):
+        return len(self.players) >= 5
+
+    def _assign_roles(self):
+        num_players = len(self.players)
+        num_wolves = 1        
 
     def start(self, who):
         #register callbacks
@@ -46,6 +53,9 @@ class Game(object):
             self.irc.callbacks.unreg_callback(cb)
         self.irc.callbacks.unreg_leave_callback()
         self.irc.callbacks.unreg_nick_callback()
+
+    def join_ends(self):
+        pass
 
     def join(self, who, args):
         if self.mode == Mode.join:
@@ -70,10 +80,15 @@ class Game(object):
         pass
 
     def randplayer(self, who, args):
-        pass
+        if self.mode in [Mode.day_talk, Mode.day_vote]:
+            tplayers = []
+            for player in self.players:
+                tplayers.append(player[1])
+            self.theme.user = tplayers[random.randint(0, len(tplayers)-1)]
+            #TODO: print to channnel the random name
     
     def player_leave(self, who):
-        pass
+        self._rem_player(who)
     
     def player_nick(self, old, new):
         """player nick change"""

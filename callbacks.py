@@ -76,7 +76,6 @@ class Callbacks:
             self.join_cb(nick)
 
     def run_leave(self, c, e):
-        self.callbacks.run_leave(c, e)
         nick    = nm_to_n(e.source())
         self.irc.send_message(self.irc.channel, nick + " has left the channel")
         if self.leave_cb != None:
