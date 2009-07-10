@@ -3,7 +3,7 @@
 from random import randint
 
 class Commands:
-    game = ["join", "vote", "kill", "guard", "see", "randplayer"]
+    game = ["join", "vote", "kill", "guard", "see", "randplayer", "join_end"]
 
 class Mode:
     join        = 0
@@ -25,9 +25,15 @@ class Theme:
         i = randint(0, len(string_list)-1)
         result = string_list[i]
         for token in self.tokens:
+            setattr(self, token, str(getattr(self, token))) 
+        for token in self.tokens:
             result = result.replace(self.token_delim+token,
                                     getattr(self, token))
         return result
+
+    def reset(self):
+        for token in self.tokens:
+            setattr(self, token, "")
         
     ### Role Names ###
     role_names = ["Villager", "Werewolf", "Seer", "Guardian", "Angel"]
@@ -35,7 +41,7 @@ class Theme:
     ### Game Text Messages ###
 
     #Message format: <group or command>_<action of group or command>_message
-    
+    #TODO: add tokens for chan messages, pvt notices, chan notices and formatting
     #$num is the number of times an action has been executed like join
     #$user gets replaced by the current user
     #$role gets the role of $user
@@ -52,6 +58,15 @@ class Theme:
     
     #message when someone tries to rejoin the hunt
     join_old_message = ["You have already joined the hunt."]
+    
+    #message when the joining ends
+    join_end_message = ["Joining ends."]
+    
+    #message when joining succeeds
+    join_success_message = ["Congratulations you have $num players in the hunt!"]
+
+    #message when joining fails
+    join_fail_message = ["Sorry not enough players have joined."]
     
     #message when seer is killed by a lynch vote
     vote_die_seer_message = ["$target runs before the mob is organised, dashing \
