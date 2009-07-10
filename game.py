@@ -11,6 +11,7 @@ class Game(object):
         self.c  = bot.connection
         self.execute_delayed = bot.connection.execute_delayed
         self.players = {}
+        self.add_player(who)
         self.can_join = True
         self.start()
 
@@ -22,10 +23,16 @@ class Game(object):
         unreg = self.irc.command_handler.unreg_callback
         unreg("join")
 
+    def add_player(self, who):
+        self.players[who] = None
+
+    def rem_player(self, who):
+        pass #remove player from player list and check if game ended
+
     def join(self, who, args):
         if self.can_join:
             if who not in self.players:
-                self.players[who] = None
+                self.add_player(who)
                 self.irc.send_message(self.irc.channel, who + " joined the hunt")
             else:
                 self.irc.send_notice(who, "You are already in game")
