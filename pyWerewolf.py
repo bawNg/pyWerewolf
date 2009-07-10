@@ -17,6 +17,7 @@ class WerewolfBot(SingleServerIRCBot):
         self.command_handler = Command_Handler(self)
         self.connection.add_global_handler("all_events", self.on_all_events, -100)
         self.callbacks = Callbacks(self)
+
         #game
         self.game = None
         self.callbacks.reg_callback("start", self.start_game)
@@ -77,6 +78,9 @@ class WerewolfBot(SingleServerIRCBot):
 
     def on_nick(self, c, e):
         self.callbacks.run_nick(c, e)
+
+    def on_mode(self, c, e):
+        pass#TODO: demoderate and voice everyone when no game
 
     ### Wrapper Methods ###
     def send_message(self, target, msg):

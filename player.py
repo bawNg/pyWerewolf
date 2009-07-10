@@ -14,7 +14,7 @@ class Abilities:
     guard   = 3
     angel   = 4
 
-class Base_Role:
+class BaseRole:
     def __init__(self):
         #role in the game
         self.role = None
@@ -25,9 +25,9 @@ class Base_Role:
         #which party does this role win with
         self.wins_with = None
 
-class Villager(Base_Role):
+class Villager(BaseRole):
     def __init__(self):
-        base_role.__init__(self)
+        BaseRole.__init__(self)
         self.role = Role.villager
         self.appears_as = Role.villager
         self.abilities.append(Abilities.vote)
@@ -69,3 +69,18 @@ class Angel(Villager):
         self.appears_as = Role.angel
         self.abilities.append(Abilities.angel)
 
+class Player:
+    def __init__(self, name):
+        self.role       = None  #Player's role
+        self.name       = name  #Player's actual nick preserving case
+        self.vote       = None  #Who player votes to lynch
+        self.kill       = None  #Who player votes to kill
+        self.see        = None  #Who player chooses to see
+        self.guard      = None  #Who player chooses to guard
+        self.notvoted   = 0     #How many times in a row player has not voted
+    
+    def reset(self):
+        self.vote   = None
+        self.kill   = None
+        self.see    = None
+        self.guard  = None

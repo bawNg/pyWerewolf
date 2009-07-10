@@ -11,7 +11,9 @@ class Game(object):
         self.c  = bot.connection
         self.execute_delayed = bot.connection.execute_delayed
         self.theme = Theme()
-        self.start(who)
+        self.players = {}
+        self.mode = Mode.join
+        self._start(who)
 
     def _chan_message(self, message_list):
         self.irc.send_message(self.irc.channel, 
@@ -22,16 +24,13 @@ class Game(object):
                              self.theme.get_string(message_list))
         
     def _add_player(self, who):
-        self.players[who.lower()] = (None, who)
+        self.players[who.lower()] = Player(who)
 
     def _rem_player(self, who):
         pass #TODO: remove player from player list and check if game ended
     
     def _check_win(self):
         return False#TODO: count num wolves and num villagers
-
-    def _can_start_game(self):
-        return len(self.players) >= 5
 
     def _assign_roles(self):
         num_players     = len(self.players)
@@ -46,6 +45,12 @@ class Game(object):
             num_wolves = 1
         if num_seers < 1:
             num_seers = 1
+        if num_villagers < 0:
+            num_villagers += num_angels
+            num_angels = 0
+            num_villagers += num_traitors
+            num_traitors = 0
+
         roles = []
         for i in xrange(num_wolves):
             roles.append(Wolf())
@@ -61,11 +66,12 @@ class Game(object):
             roles.append(Villager())
         random.shuffle(roles)
         for i, player in enumerate(self.players.keys()):
-            self.players[player][0] = roles[i]
-            print self.players[player][1], self.theme.roles[roles[i].role]
+            self.players[player].role = roles[i]
+            print self.players[player].name, self.theme.role_names[roles[i].role],
+            print self.theme.role_names[roles[i].appears_as]
             #TODO: Output player roles
 
-    def start(self, who):
+    def _start(self, who):
         #register callbacks
         for cb in Commands.game:
             self.irc.callbacks.reg_callback(cb, getattr(self, cb))
@@ -73,10 +79,9 @@ class Game(object):
         self.irc.callbacks.reg_nick_callback(self.player_nick)
 
         #setup game info
+        self.theme.reset()
         self.theme.user = who
         self._chan_message(self.theme.game_start_message)
-        self.players = {}
-        self.mode = Mode.join
         self._add_player(who)
         #TODO: start join end timer
 
@@ -87,15 +92,19 @@ class Game(object):
         self.irc.callbacks.unreg_nick_callback()
         #TODO: kill timers
 
-    def join_end(self):
-        if self._can_start_game():
-            #TODO: Unvoice everyone
-            #TODO: moderate channel
+    def join_end(self, t, t2):
+        if len(self.players) >= 3:
+            #self.irc.set_moderated()
+            #TODO: unvoice everyone
+            self.theme.reset()
+            self.theme.num = str(len(self.players))
+            self._chan_message(self.theme.join_success_message)
             self._assign_roles()
             #TODO: Start Night
             pass
         else:
-            #TODO: tell too few players
+            self.theme.reset()
+            self._chan_message(self.theme.join_fail_message)
             self.irc.end_game()
 
     def night_start(self):
@@ -131,30 +140,69 @@ class Game(object):
         if self.mode == Mode.join:
             if who.lower() not in self.players:
                 self._add_player(who)
+                self.theme.reset()
                 self.theme.user = who
                 self.theme.num  = str(len(self.players))
                 self._chan_message(self.theme.join_new_message)
                 #TODO: update timeleft
             else:
+                self.theme.reset()
+                self.theme.user = who
                 self._notice(who, self.theme.join_old_message)
     
     def vote(self, who, args):
-        pass
+        if len(args) == 1:
+            if self.mode == Mode.day_vote:
+                #TODO: update vote and output
+                pass
+            else:
+                #TODO: output not valid time
+                pass
+        else:
+            #TODO: output invalid format
+            pass
     
     def kill(self, who, args):
-        pass
+        if len(args) == 1:
+            if self.mode == Mode.night:
+                #TODO: update vote and output
+                pass
+            else:
+                #TODO: output not valid time
+                pass
+        else:
+            #TODO: output invalid format
+            pass
     
     def guard(self, who, args):
-        pass
+        if len(args) == 1:
+            if self.mode == Mode.night:
+                #TODO: update vote and output
+                pass
+            else:
+                #TODO: output not valid time
+                pass
+        else:
+            #TODO: output invalid format
+            pass
 
     def see(self, who, args):
-        pass
+        if len(args) == 1:
+            if self.mode == Mode.night:
+                #TODO: update vote and output
+                pass
+            else:
+                #TODO: output not valid time
+                pass
+        else:
+            #TODO: output invalid format
+            pass
 
     def randplayer(self, who, args):
         if self.mode in [Mode.day_talk, Mode.day_vote]:
             tplayers = []
             for player in self.players:
-                tplayers.append(player[1])
+                tplayers.append(player.name)
             self.theme.user = tplayers[random.randint(0, len(tplayers)-1)]
             #TODO: print to channnel the random name
     

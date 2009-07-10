@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
+from game_data import *
 
 class Callbacks:
     def __init__(self, bot):
