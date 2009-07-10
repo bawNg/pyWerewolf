@@ -18,7 +18,6 @@ class WerewolfBot(SingleServerIRCBot):
         self.game = None
         self.command_handler.reg_callback("start", self.start_game)
         #TODO: remove these callbacks
-        self.admin = ["blaq_phoenix", "shadowmaster", "defi"] 
         self.command_handler.reg_callback("die", self.cmd_die)
         self.command_handler.reg_callback("end", self.cmd_end)
 
@@ -65,7 +64,7 @@ class WerewolfBot(SingleServerIRCBot):
 
     def on_part(self, c, e):
         self.command_handler.process_leave(e)
-        
+
     def on_quit(self, c, e):
         self.command_handler.process_leave(e)
 
@@ -87,21 +86,25 @@ class WerewolfBot(SingleServerIRCBot):
         if self.game == None:
             self.game = Game(self, who)
             #TODO: add player in who started game
-    
+
     def end_game(self):
         if self.game != None:
             self.game.end()
             self.game = None
 
     ### Miscellaneous ###
+    def is_admin(self, nick):
+        if nick.lower() in config.irc.admins: return True
+        return False
+
     def cmd_die(self, who, args):
-        if who.lower() in self.admin:
+        if self.is_admin(who):
             self.die()
         else:
             self.send_message(self.channel, "Help! " + who + " tried to kill me :'(")
 
     def cmd_end(self, who, args):
-        if who.lower() in self.admin:
+        if self.is_admin(who):
             self.end_game()
         else:
             self.send_message(self.channel, "Help! " + who + " tried to end my fun :'(")
