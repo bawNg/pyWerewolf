@@ -37,6 +37,9 @@ class Timers:
     def extend_timer(self, timer, delay):
         self._timers[timer].extend(delay)
 
+    def remove_all(self):
+        self._timers = []
+
     def get_timer(self, method):
         for timer in self._timers:
             if self.method == method: return timer
