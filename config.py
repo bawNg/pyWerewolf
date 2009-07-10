@@ -7,6 +7,7 @@ class irc:
     channel     = "#werewolf.dev"
     nickname    = ("pyWerewolf", "pyWerewolf_")
     password    = "werewolf"
+    admins      = ["blaq_phoenix", "shadowmaster", "defi"]
 
 # Game config
 class game:

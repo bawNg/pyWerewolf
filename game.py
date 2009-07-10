@@ -43,9 +43,9 @@ class Game(object):
 
     def end(self):
         for cb in Commands.game:
-            self.irc.unreg_callback(cb, getattr(self, cb))
-        self.irc.unreg_leave_callback(self.player_leave)
-        self.irc.unreg_nick_callback(self.player_nick)
+            self.irc.unreg_callback(cb)
+        self.irc.unreg_leave_callback()
+        self.irc.unreg_nick_callback()
 
     def join(self, who, args):
         if self.mode == Mode.join:

@@ -102,12 +102,16 @@ class WerewolfBot(SingleServerIRCBot):
     def send_notice(self, target, msg):
         self.connection.notice(target, msg)
 
+    def voice_users(self, targets):
+        self.connection.mode(self.channel, "+%s %s" % \
+                             ('v'*len(targets), "".join(targets, " ")))
+
     ### Game Management Methods ###
     def start_game(self, who, args):
         if self.game == None:
             self.game = Game(self, who)
             #TODO: add player in who started game
-    
+
     def end_game(self):
         if self.game != None:
             self.game.end()
@@ -186,11 +190,19 @@ class WerewolfBot(SingleServerIRCBot):
     def cmd_die(self, who, args):
         if who.lower() in self.admin:
             self.die(msg="RAWR")
+
+    def is_admin(self, nick):
+        if nick.lower() in config.irc.admins: return True
+        return False
+
+    def cmd_die(self, who, args):
+        if self.is_admin(who):
+            self.die()
         else:
             self.send_message(self.channel, "Help! " + who + " tried to kill me :'(")
 
     def cmd_end(self, who, args):
-        if who.lower() in self.admin:
+        if self.is_admin(who):
             self.end_game()
         else:
             self.send_message(self.channel, "Help! " + who + " tried to end my fun :'(")
