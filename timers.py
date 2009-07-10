@@ -42,7 +42,7 @@ class Timers:
 
     def get_timer(self, method):
         for timer in self._timers:
-            if self.method == method: return timer
+            if timer.method == method: return timer
         return None
 
     def process_timeout(self):
