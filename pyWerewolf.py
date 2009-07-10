@@ -93,7 +93,7 @@ class WerewolfBot(SingleServerIRCBot):
     def set_moderated(self, moderated=True):
         self.set_modes("%sm" % '+' if moderated else '-')
 
-    def voice_users(targets):
+    def voice_users(self, targets):
         for start in range(0, len(targets), 12):
             end = start+12
             if len(targets) < end: end = len(targets)
@@ -102,7 +102,7 @@ class WerewolfBot(SingleServerIRCBot):
             modes = "+%s %s" % ('v'*(end-start), nicks)
             self.set_modes(modes)
 
-    def devoice_users(targets, unmoderate=False):
+    def devoice_users(self, targets, unmoderate=False):
         for start in range(0, len(targets), 12):
             end = start+12
             if len(targets) < end: end = len(targets)
@@ -149,9 +149,12 @@ class WerewolfBot(SingleServerIRCBot):
         else:
             self.send_message(self.channel, "Help! " + who + " tried to end my fun :'(")
 
+
     def process_forever(self):
-        self.connection.process_once(0.2)
-        self.timers.process_timeout()
+        self._connect()
+        while 1:
+            self.ircobj.process_once(0.2)
+            self.timers.process_timeout()
 
 def main():
     if len(sys.argv) is 5:
@@ -163,7 +166,7 @@ def main():
         bot = WerewolfBot(config.irc.channel, config.irc.nickname[0], \
                                     config.irc.server, config.irc.port)
     try:
-        bot.start()
+        bot.process_forever()
     except KeyboardInterrupt:
         print "^C - Exiting gracefully..."
         bot.disconnect(msg="Terminated at terminal")
