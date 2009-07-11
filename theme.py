@@ -1,4 +1,7 @@
-#!/usr/bin/evn python
+#!/usr/bin/env python
+
+from player import Role
+from command_handler import Command
 
 class Type:
     game        = 0     #messages relating to the game
@@ -16,9 +19,6 @@ class Type:
     misc        = 12    #miscellaneous messages
     num         = 13    #num message types
 
-    subtypes = [Game, Command, Join, Role, Night, Kill, See, Guard, Day, Vote, Die,
-                Win, Misc]
-    
     class Game:     #game type subtypes
         start           = 0 #message when a new game gets started
         started         = 1 #message when players tries to start game when one 
@@ -127,5 +127,96 @@ class Type:
         dead        = 3 #message to tell user he's dead
         num         = 4 #num misc subtypes
         
+    #iterable list of types
+    types = [(game, Game), (command, Command), (join, Join), (role, Role), 
+             (night, Night), (kill, Kill), (see, See), (guard, Guard), 
+             (day, Day), (vote, Vote), (die, Die), (win, Win), (misc, Misc)]
+    
 class Theme:
-    pass
+    def __init__(self):
+        #custom command names
+        self.commands = [None for i in xrange(Commands.num)]
+
+        #create 3D array to hold messages
+        self.messages = [[[None for k in xrange(Role.num)] 
+                         for j in xrange(subtype.num)] 
+                         for i, subtype in Type.types]
+
+        ### MESSAGE TOKENS ###
+        #TODO: add tokens for chan messages, pvt notices, chan notices and formatting
+        #$bot is the name of the bot
+        #$num is the number of times an action has been executed like join
+        #$user gets replaced by the current user
+        #$target gets replaced by who is targeted by current user
+        #$votes gets replaced by current vote tallies
+        #$roles gets the names of the roles
+        #$alive gets the alive villagers
+
+        ### GAME TOKENS ###
+        #$user is the user who sent the command
+
+        ### COMMAND TOKENS ###
+        #$user is the user who sent the command
+        #$target is the name of the command
+
+        ### JOIN TOKENS ###
+        #$user is the user who called the command
+        #$num is the num players who have joined the game (so far)
+
+        ### ROLE TOKENS ###
+        #$user is the user who is recieving the message
+        #$num is the number of players of that role
+
+        ### NIGHT TOKENS ###
+        #$bot is the name of the bot
+
+        ### KILL $ SEE $ GUARD TOKENS ###
+        #$user is the person issuing the command
+        #$target is the target of the user's command
+        
+        ### DAY TOKENS ###
+        #$num is the time left for talking
+        
+        ### VOTE TOKENS ###
+        #$user is the person issuing the command
+        #$target is the target of the user's command
+        #$votes is the tally of the votes so far
+
+        ### DIE TOKENS ###
+        #$target is the target of the killing
+
+        ### WIN TOKENS ###
+        #$roles are the list of players with the perticular role
+
+        ### MISC TOKENS ###
+        #$user is person calling the command
+        #$target is the result of the command
+
+class WerewolfTheme(Theme)
+    def __init__(self):
+        Theme.__init__(self)
+        self.commands[Command.start]        = "start"
+        self.commands[Command.help]         = "help"
+        self.commands[Command.join]         = "join"
+        self.commands[Command.leave]        = "leave"
+        self.commands[Command.kill]         = "kill"
+        self.commands[Command.guard]        = "guard"
+        self.commands[Command.see]          = "see"
+        self.commands[Command.vote]         = "vote"
+        self.commands[Command.randplayer]   = "randplayer"
+        m = self.messages#alias for messages
+        t = Type    #alias for Type
+        r = Role    #alias for Role
+
+        #Messages for game
+        m[t.game][r.Game.start][r.noone]         = ["$user started a new game! "+
+            "You have $num seconds to join!"]
+        m[t.game][r.Game.started][r.noone]       = ["Game already running."]
+        m[t.game][r.Game.join_starting][r.noone] = ["A game is starting. Type "+
+            "!" + self.commands[Command.join] + " to join it."]
+        m[t.game][r.Game.join_running][r.noone]  = ["A game is already running. "+
+            " It should finish soon, then you can join the fun. :)"]
+        m[t.game][r.Game.join_none][r.noone]     = ["No game is running. Start "+
+            "one by typing: !" + self.commands[Command.start]]
+
+        m[t.game][r.Game.join_none][r.noone]     = [""]

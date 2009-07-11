@@ -3,6 +3,18 @@
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
 import game_data
 
+class Command:
+    start       = 0 #command to start game
+    help        = 1 #command to get help
+    join        = 2 #command to join game
+    leave       = 3 #command to leave game
+    kill        = 4 #command to kill
+    guard       = 5 #command to guard
+    see         = 6 #command to see
+    vote        = 7 #command to vote
+    randplayer  = 8 #command to choose random player
+    num         = 9 #num commands
+
 class Command_Message:
     def __init__(self, e, msg):
         self.event_type = e.eventtype()             # event type is pubmsg, privmsg,etc
