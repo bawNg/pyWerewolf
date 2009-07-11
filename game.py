@@ -74,6 +74,7 @@ class Game(object):
         if num_villagers <= 0:
             num_villagers += num_angels
             num_angels = 0
+        if num_villager <= 0:
             num_villagers += num_traitors
             num_traitors = 0
 
@@ -110,7 +111,7 @@ class Game(object):
                 other_wolves = []
                 for j in xrange(i):
                     other_wolves.append(self.roles[Role.wolf][j])
-                for j in xrange(i+1, len(self.wolves)):
+                for j in xrange(i+1, len(self.roles[Role.wolf])):
                     other_wolves.append(self.roles[Role.wolf][j])
                 self.theme.reset()
                 who = self.theme.user = self.roles[Role.wolf][i]
@@ -232,10 +233,10 @@ class Game(object):
         for player in self._role(Role.wolf):
             if player.kill:
                 kill = player.kill.lower()
-                if kill not in wolf_target:
-                    wolf_target[kill] = 0
-                wolf_target[kill] += 1
-                max_votes = max(max_votes, wolf_target[kill])
+                if kill not in wolf_targets:
+                    wolf_targets[kill] = 0
+                wolf_targets[kill] += 1
+                max_votes = max(max_votes, wolf_targets[kill])
         temp_wolf_targets = []
         for t in wolf_targets:
             if wolf_targets[t] == max_votes:
@@ -273,7 +274,7 @@ class Game(object):
                     pass #player left, do nothing
 
         #kill wolf target
-        if wolf_target:
+        if wolf_target is None:
             role = self.players[wolf_target].role.role
             nick = self.players[wolf_target].nick
             self.theme.reset()
@@ -358,7 +359,9 @@ class Game(object):
     def vote(self, who, args):
         print "vote", who, args
         if who.lower() in self.players:
-            if len(args) == 1:
+            if args is None:
+                args = []
+            if len(args) >= 1:
                 if self.mode == Mode.day_vote:
                     target = args[0]
                     if target.lower() in self.players:
@@ -388,16 +391,20 @@ class Game(object):
     def kill(self, who, args):
         print "kill", who, args
         if who.lower() in self.players:
-            if len(args) == 1:
+            if args is None:
+                args = []
+            if len(args) >= 1:
                 player = self.players[who.lower()]
-                target = self.players[args[0].lower()]
+                target = args[0].lower()
                 self.theme.reset()
                 self.theme.user = player.nick
-                self.theme.target = target.nick
+                self.theme.target = args[0]
                 if target not in self.players:
                     # target is not in the game
                     self._notice(who, self.theme.kill_invalid_target_message)
                 elif self.mode == Mode.night:
+                    target = self.players[target]
+                    self.theme.target = target.nick
                     # its night time
                     if player.role.role != Role.wolf:
                         # player is not a wolf
@@ -407,8 +414,8 @@ class Game(object):
                         self._notice(who, self.theme.kill_invalid_wolf_message)
                     elif player.role.role == Role.wolf:
                         # player is a wolf
-                        players[who.lower()].kill = args[0]
-                        if len(self.wolves) == 1:
+                        player.kill = target.nick
+                        if len(self.roles[Role.wolf]) == 1:
                             self._notice(who, self.theme.kill_wolf_message)
                         else:
                             self._notice(who, self.theme.kill_wolves_message)
@@ -427,16 +434,20 @@ class Game(object):
     def guard(self, who, args):
         print "guard", who, args
         if who.lower() in self.players:
-            if len(args) == 1:
+            if args is None:
+                args = []
+            if len(args) >= 1:
                 player = self.players[who.lower()]
-                target = self.players[args[0].lower()]
+                target = args[0].lower()
                 self.theme.reset()
                 self.theme.user = player.nick
-                self.theme.target = target.nick
+                self.theme.target = args[0]
                 if target not in self.players:
                     # target is not in the game
                     self._notice(who, self.theme.guard_invalid_target_message)
                 elif self.mode == Mode.night:
+                    target = self.players[args[0].lower()]
+                    self.theme.target = target.nick
                     # its night time
                     if player.role.role != Role.guardian:
                         # player is not a guard
@@ -460,23 +471,28 @@ class Game(object):
     def see(self, who, args):
         print "see", who, args
         if who.lower() in self.players:
-            if len(args) == 1:
+            if args is None:
+                args = []
+            if len(args) >= 1:
                 player = self.players[who.lower()]
-                target = self.players[args[0].lower()]
+                target = args[0].lower()
                 self.theme.reset()
                 self.theme.user = player.nick
-                self.theme.target = target.nick
+                self.theme.target = args[0]
                 if target not in self.players:
                     # target is not in the game
                     self._notice(who, self.theme.see_invalid_target_message)
                 elif self.mode == Mode.night:
                     # its night time
-                    if player.role.role != Role.seer:
+                    target = self.players[args[0].lower()]
+                    self.theme.target = target.nick
+                    role = tplayer.role.role
+                    if role != Role.seer:
                         # player is not a guard
                         self._notice(who, self.theme.see_not_seer_message)
-                    elif player.role.role == Role.seer:
+                    elif role == Role.seer:
                         # player is a guard
-                        player.guard = target.nick
+                        tplayer.guard = target
                         self._notice(who, self.theme.see_target_message)
                 else:
                     # its not night time
@@ -501,11 +517,15 @@ class Game(object):
             self._chan_message(self.theme.randplayer_message)
 
     def on_channel_join(self, who):
+        self.theme.reset()
         if self.mode == Mode.join:
             time = Consts.join_extend_time
             if self.timers.get_timer(self.join_end).time_left < time:
                 self.timers.get_timer(self.join_end).set_timeleft(time)
-            #TODO: alert user that a game is about to start
+            self._notice(who, self.theme.game_starting_message)
+        else:
+            self._notice(who, self.theme.game_started_message)
+            
 
     def on_player_channel_leave(self, who):
         self.leave(who)
