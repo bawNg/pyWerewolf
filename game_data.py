@@ -163,6 +163,9 @@ class Theme:
     #message when voting ends
     vote_end_message = ["Voting has ended."]
 
+    #message when voting ends in tie
+    vote_tie_message = ["There was a tie, randomly choosing target."]
+
     ### LYNCH MESSAGES ###
     
     vote_die_message = [None for i in xrange(Role.num)]

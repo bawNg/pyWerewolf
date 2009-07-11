@@ -51,7 +51,10 @@ class Game(object):
             self._chan_message(self.theme.win_wolves_message)
             win = True
         if win:
-            self._chan_message(self.theme.win_wolves_list_message)
+            if len(self.roles[Role.wolf]) == 1:
+                self._chan_message(self.theme.win_list_message[Role.wolf])
+            elif len(self.roles[Role.wolf]) > 1:
+                self._chan_message(self.theme.win_lists_message[Role.wolf])
             self.end()
         return win
 
@@ -163,7 +166,15 @@ class Game(object):
             self.players[player].reset()
 
     def _get_vote_tally(self):
-        pass
+        votes = {}
+        for pn in self.players:
+            player = self.players[pn]
+            if player.vote is not None:
+                vote = player.vote.lower()
+                if vote not in votes:
+                    votes[vote] = 0
+                votes[vote] += 1
+        return votes
 
     def _start(self, who):
         #register callbacks
@@ -269,12 +280,23 @@ class Game(object):
                     self.theme.reset()
                     self.theme.target = player.see
                     role = self.players[player.see.lower()].role.appears_as
-                    self._notice(player.name, self.theme.see_message[role])
+                    self._notice(player.nick, self.theme.see_message[role])
                 else:
                     pass #player left, do nothing
+        
+        #check if wolf target is alive
+        if wolf_target is not None:
+            if wolf_target not in self.players:
+                wolf_target = None
 
+        #check if wolf target is angel
+        if wolf_target is not None:
+            target = self.players[wolf_target]
+            if target.role.role == Role.angel:
+                wolf_target = None
+        
         #kill wolf target
-        if wolf_target is None:
+        if wolf_target is not None:
             role = self.players[wolf_target].role.role
             nick = self.players[wolf_target].nick
             self.theme.reset()
@@ -315,10 +337,45 @@ class Game(object):
         self.irc.unvoice_everyone()
 
         #tally votes
+        votes = self._get_vote_tally()
+        max_vote = 0
+        lynch_targets = []
+        for vote, num in votes.items():
+            if num > max_vote:
+                lynch_targets = [vote]
+                max_vote = num
+            elif num == max_vote:
+                lynch_targets.append(vote)
+
+        lynch_target = None
+        if len(lynch_targets) > 1:
+            self.theme.reset()
+            self._chan_message(self.theme.vote_tie_message)
+            ran = random.randint(0, len(lynch_targets)-1)
+            lynch_target = lynch_targets[ran]
+        elif len(lynch_targets) == 1:
+            lynch_target = lynch_targets[0]
         
-        #TODO: tally votes
-        #TODO: kill player
-        #TODO: good kills
+        if lynch_target is None:
+            self.theme.reset()
+            self._chan_message(self.theme.vote_die_message[Role.noone])
+        else:
+            target = self.players[lynch_target]
+            role = target.role.role
+            self.theme.reset()
+            self.theme.user = self.theme.target = target.nick
+            self._chan_message(self.theme.vote_die_message[role])
+            self._rem_player(target.nick.lower())
+        
+        #kills for defying the good
+        for pn, player in self.players.items():
+            if player.notvoted >= Consts.good_kill_times:
+                self.theme.reset()
+                self.theme.user = self.theme.target = player.nick
+                role = player.role.role
+                self._chan_message(self.theme.good_defy_message[role])
+                self._rem_player(player.nick.lower())
+
         if not self._check_win():
             self.theme.reset()
             self._chan_message(self.theme.night_after_message)
@@ -365,11 +422,18 @@ class Game(object):
                 if self.mode == Mode.day_vote:
                     target = args[0]
                     if target.lower() in self.players:
-                        tplayer = self.players[who.lower()]
-                        #TODO update vote nd output
-                        tplayer.vote = target
+                        player = self.players[who.lower()]
+                        player.vote = target
+                        player.notvoted = 0
                         self.theme.reset()
+                        self.theme.user = player.nick
                         self.theme.target = target
+                        votes = self._get_vote_tally()
+                        self.theme.votes = ""
+                        for vote, num in votes.items():
+                            tn = self.players[vote.lower()].nick
+                            self.theme.votes += tn + ":" + str(num) + ", "
+                        self.theme.votes = self.theme.votes[:-2]
                         self._chan_message(self.theme.vote_target_message)
                     else:
                         self.theme.reset()
