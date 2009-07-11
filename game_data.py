@@ -202,6 +202,9 @@ class Theme:
                                    "villager puts a silver bullet in the "+
                                    "beast's head..."]
     
+    #message when angel is killed by a lynch vote
+    vote_die_message[Role.angel] = ["$target the angel is killed by the angry mob."]
+
     #message when villager is killed by a lynch vote
     vote_die_message[Role.villager] = ["The air thick with adrenaline, the "+
                                        "villagers grab $target who struggles "+
