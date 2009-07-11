@@ -108,7 +108,7 @@ class WerewolfBot(SingleServerIRCBot):
         self.connection.mode(self.channel, modes)
 
     def set_moderated(self, moderated=True):
-        self.set_modes("%sm" % '+' if moderated else '-')
+        self.set_modes("%sm" % ('+' if moderated else '-'))
 
     def voice_users(self, targets):
         for start in range(0, len(targets), 12):
