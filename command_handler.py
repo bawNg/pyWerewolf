@@ -38,7 +38,12 @@ class Command_Handler:
             do_cmd(self.c, e_msg)
         else:
             if e_msg.command in self.callbacks:
-                self.callbacks[e_msg.command](e_msg.nick, *e_msg.args)
+                try:
+                    self.callbacks[e_msg.command](e_msg.nick, *e_msg.args)
+                except Exception as exc:
+                    print "Failed to process command [%s] from nick [%s]." \
+                            % (e_msg.raw_message, e_msg.nick)
+                    raise
             elif e_msg.command in game_data.Commands.game:
                 #TODO: get these messages from themes
                 self.irc.send_notice(e_msg.nick, e_msg.command +
@@ -49,13 +54,6 @@ class Command_Handler:
                     " is an unknown command." +
                     " For the list of commands type: !help")
 
-            try:
-                self.process_command_callback(e_msg.command, \
-                                              e_msg.nick, e_msg.args)
-            except Exception as exc:
-                print "Failed to process command message [%s] from nick [%s]." \
-                        % (e_msg.raw_message, e_msg.nick)
-                raise
 
     def help(self, who, e):
         #TODO: Move out to theme class
