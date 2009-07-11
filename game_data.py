@@ -402,7 +402,7 @@ class Theme:
     ### WIN ###
 
     win_wolves_message = ["The wolves have won."]
-    win_villagers = ["The villagers have won."]
+    win_villagers_message = ["The villagers have won."]
     win_wolves_list_message = ["The wolves were: $wolves"]
 
     ### MISCELLANEOUS ###

@@ -29,13 +29,30 @@ class Game(object):
 
     def _rem_player(self, who):
         if who.lower() in self.players:
-            #TODO: unvoice player
             self.irc.devoice_users([who])
             del self.players[who.lower()]
 
     def _check_win(self):
-        #TODO: end game if win and print appropriate messages
-        return False#TODO: count num wolves and num villagers
+        num_wolves = 0
+        num_villagers = 0
+        for player in self.players:
+            tplayer = self.players[player]
+            if tplayer.role.wins_with == Role.villager:
+                num_villagers += 1
+            else:
+                num_wolves += 1
+        win = False
+        self.theme.reset()
+        self.theme.wolves = " ".join(self.wolves)
+        if num_wolves == 0:
+            self._chan_message(self.theme.win_villagers_message)
+            win = True
+        elif num_wolves == num_villagers:
+            self._chan_message(self.theme.win_wolves_message)
+            win = True
+        if win:
+            self._chan_message(self.theme.win_wolves_list_message)
+        return win
 
     def _assign_roles(self):
         num_players     = len(self.players)
@@ -156,6 +173,7 @@ class Game(object):
         self.theme.reset()
         self.theme.user = who
         self.theme.num = Consts.join_time
+        self.mode = Mode.join
         self._chan_message(self.theme.game_start_message)
         self._add_player(who)
         self.timers.add_timer(Consts.join_time, self.join_end)
@@ -283,13 +301,19 @@ class Game(object):
         self.theme.reset()
         self.theme.num = Consts.vote_time
         self._chan_message(self.theme.vote_start_message)
+        for player in self.players:
+            tplayer = self.players[player]
+            tplayer.notvoted += 1
         self.timers.add_timer(Consts.vote_time, self.vote_end)
-        pass
 
     def vote_end(self):
+        #end voting
         self.theme.reset()
         self._chan_message(self.theme.vote_end_message)
         self.irc.unvoice_everyone()
+
+        #tally votes
+        
         #TODO: tally votes
         #TODO: kill player
         #TODO: good kills
@@ -297,7 +321,6 @@ class Game(object):
             self.theme.reset()
             self._chan_message(self.theme.night_after_message)
             self.night_start()
-        pass
 
     def join(self, who, args):
         if self.mode == Mode.join:
@@ -315,6 +338,7 @@ class Game(object):
                 self.theme.user = who
                 self._notice(who, self.theme.join_old_message)
         else:
+            self.theme.reset()
             self._notice(who, self.theme.join_ended_message)
 
     def leave(self, who, args=None):
@@ -418,10 +442,11 @@ class Game(object):
             self._chan_message(self.theme.randplayer_message)
 
     def on_channel_join(self, who):
-        time = Consts.join_extend_time
-        if self.timers.get_timer(self.join_end).time_left < time:
-            self.timers.get_timer(self.join_end).set_timeleft(time)
-        #TODO: alert user that a game is about to start
+        if self.mode == Mode.join:
+            time = Consts.join_extend_time
+            if self.timers.get_timer(self.join_end).time_left < time:
+                self.timers.get_timer(self.join_end).set_timeleft(time)
+            #TODO: alert user that a game is about to start
 
     def on_player_channel_leave(self, who):
         self.leave(who)

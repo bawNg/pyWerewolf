@@ -17,7 +17,6 @@ class Command_Message:
             self.payload = msg.split(" ")[1]
             self.args    = msg.split(" ")[1:]
 
-
 class Command_Handler:
     def __init__(self, bot):
         self.irc        = bot
@@ -41,6 +40,7 @@ class Command_Handler:
             if e_msg.command in self.callbacks:
                 self.callbacks[e_msg.command](e_msg.nick, *e_msg.args)
             elif e_msg.command in game_data.Commands.game:
+                #TODO: get these messages from themes
                 self.irc.send_notice(e_msg.nick, e_msg.command +
                     " can only be used when a game is running." +
                     " Start one with: !start")
@@ -58,6 +58,7 @@ class Command_Handler:
                 raise
 
     def help(self, who, e):
+        #TODO: Move out to theme class
         self.irc.send_notice(who, "To start of a game of Werewolf type: !start")
         self.irc.send_notice(who, "To join a running game," +
                               " while joins are being accepted, type: !join")
