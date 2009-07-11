@@ -74,7 +74,7 @@ class Game(object):
         if num_villagers <= 0:
             num_villagers += num_angels
             num_angels = 0
-        if num_villager <= 0:
+        if num_villagers <= 0:
             num_villagers += num_traitors
             num_traitors = 0
 
@@ -486,13 +486,13 @@ class Game(object):
                     # its night time
                     target = self.players[args[0].lower()]
                     self.theme.target = target.nick
-                    role = tplayer.role.role
+                    role = player.role.role
                     if role != Role.seer:
-                        # player is not a guard
+                        # player is not a seer
                         self._notice(who, self.theme.see_not_seer_message)
                     elif role == Role.seer:
-                        # player is a guard
-                        tplayer.guard = target
+                        # player is a seer
+                        player.see = target.nick
                         self._notice(who, self.theme.see_target_message)
                 else:
                     # its not night time
