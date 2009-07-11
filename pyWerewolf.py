@@ -29,7 +29,7 @@ class WerewolfBot(SingleServerIRCBot):
             print e.source(), e.eventtype().upper(), e.target(), e.arguments()
 
     def on_welcome(self, c, e):
-        c.join(self.channel)
+        c.mode(c.get_nickname(), "+B")
 
     def on_nicknameinuse(self, c, e):
         for n in config.irc.nickname:
@@ -60,6 +60,7 @@ class WerewolfBot(SingleServerIRCBot):
         if (nick == "NickServ") and \
         (msg.startswith("This nickname is registered and protected.")):
             c.privmsg(nick, "identify %s" % config.irc.password)
+            c.join(self.channel)
 
     def on_kick(self, c, e):
         self.on_quit(c, e)
