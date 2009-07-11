@@ -133,7 +133,7 @@ class WerewolfBot(SingleServerIRCBot):
             if len(targets) < end: end = len(targets)
             nicks = ""
             for t in targets[start:end]: nicks += "%s " % t
-            modes = "+%s %s" % ('v'*(end-start), nicks)
+            modes = "-%s %s" % ('v'*(end-start), nicks)
             if unmoderate: modes = "-m%s" % modes[1:]
             self.set_modes(modes)
 

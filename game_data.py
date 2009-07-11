@@ -118,7 +118,7 @@ class Theme:
     night_first_message = ["Night descends over the unsuspecting village."]
     
     #message after voting and before night
-    night_after_message = ["Villagers goes to uneasy sleep."]
+    night_after_message = ["Villagers goes to an uneasy sleep."]
 
     #message for abilities at night
     night_player_message = [None for i in xrange(Role.num)]
