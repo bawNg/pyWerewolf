@@ -12,7 +12,7 @@ class Game(object):
         self.timers = bot.timers
         self.theme = Theme()
         self.players = {}
-        self.wolves = []
+        self.roles = [[] for i in xrange(Role.roles)]
         self.mode = Mode.join
         self._start(who)
 
@@ -43,7 +43,7 @@ class Game(object):
                 num_wolves += 1
         win = False
         self.theme.reset()
-        self.theme.wolves = " ".join(self.wolves)
+        self.theme.roles = " ".join(self.roles[Role.wolf])
         if num_wolves == 0:
             self._chan_message(self.theme.win_villagers_message)
             win = True
@@ -52,6 +52,7 @@ class Game(object):
             win = True
         if win:
             self._chan_message(self.theme.win_wolves_list_message)
+            self.end()
         return win
 
     def _assign_roles(self):
@@ -102,19 +103,18 @@ class Game(object):
             self.theme.user = who
             self._notice(who, self.theme.role_message[role])
             if role == Role.wolf:
-                self.wolves.append(who)
+                self.roles[Role.wolf].append(who)
 
         if num_wolves >= 2:
-            for i in xrange(len(self.wolves)):
+            for i in xrange(len(self.roles[Role.wolf])):
                 other_wolves = []
                 for j in xrange(i):
-                    other_wolves.append(self.wolves[j])
+                    other_wolves.append(self.roles[Role.wolf][j])
                 for j in xrange(i+1, len(self.wolves)):
-                    other_wolves.append(self.wolves[j])
+                    other_wolves.append(self.roles[Role.wolf][j])
                 self.theme.reset()
-                self.theme.user = self.wolves[i]
-                who = self.wolves[i]
-                self.theme.wolves = " ".join(other_wolves)
+                who = self.theme.user = self.roles[Role.wolf][i]
+                self.theme.roles = " ".join(other_wolves)
                 if len(other_wolves) == 1:
                     self._notice(who, self.theme.role_other_message[Role.wolf])
                 else:
@@ -186,6 +186,7 @@ class Game(object):
             self.irc.command_handler.unreg_callback(cb)
         self.timers.remove_all()
         self.irc.reset_modes()
+        self.irc.remove_game()
 
     def join_end(self):
         if len(self.players) >= Consts.min_players:
@@ -236,8 +237,8 @@ class Game(object):
                 wolf_target[kill] += 1
                 max_votes = max(max_votes, wolf_target[kill])
         temp_wolf_targets = []
-        for t in wolf_target:
-            if wolf_target[t] == max_votes:
+        for t in wolf_targets:
+            if wolf_targets[t] == max_votes:
                 temp_wolf_targets.append(t)
         wolf_target = None
         if len(temp_wolf_targets) > 0:
@@ -360,7 +361,7 @@ class Game(object):
                 if self.mode == Mode.day_vote:
                     target = args[0]
                     if target.lower() in self.players:
-                        
+                        tplayer = self.players[who.lower()]
                         #TODO update vote nd output
                         pass
                     else:

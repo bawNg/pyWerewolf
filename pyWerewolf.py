@@ -143,7 +143,9 @@ class WerewolfBot(SingleServerIRCBot):
     def end_game(self):
         if self.game:
             self.game.end()
-            self.game = None
+
+    def remove_game(self):
+        self.game = None
 
     ### Miscellaneous ###
     def is_admin(self, nick):

@@ -24,7 +24,8 @@ class Mode:
 
 class Theme:
     def __init__(self):
-        self.tokens = ["num", "user", "role", "target", "votes", "wolves", "alive"]
+        self.tokens = ["bot", "num", "user", "target", 
+                       "votes", "roles", "alive"]
         for token in self.tokens:
             setattr(self, token, "")
         self.token_delim = '$'
@@ -44,6 +45,7 @@ class Theme:
     def reset(self):
         for token in self.tokens:
             setattr(self, token, "")
+        self.bot = self.irc.getnicknaem()
         
     ### Role Names ###
     role_names = ["Villager", "Werewolf", "Seer", "Guardian", "Angel"]
@@ -52,12 +54,12 @@ class Theme:
 
     #Message format: <group or command>_<action of group or command>_message
     #TODO: add tokens for chan messages, pvt notices, chan notices and formatting
+    #$bot is the name of the bot
     #$num is the number of times an action has been executed like join
     #$user gets replaced by the current user
-    #$role gets the role of $user
     #$target gets replaced by who is targeted by current user
     #$votes gets replaced by current vote tallies
-    #$wolves gets the names of the wolves
+    #$roles gets the names of the roles
     #$alive gets the alive villagers
 
     #message when game starts
@@ -120,22 +122,22 @@ class Theme:
     #message for abilities at night
     night_player_message = [None for i in xrange(Role.num)]
     night_players_message = [None for i in xrange(Role.num)]
-    night_player_message[Role.seer] = ["Seer type: /msg $user see " + 
+    night_player_message[Role.seer] = ["Seer type: /msg $bot see " + 
                                        "<target> to see. You have $num seconds."]
-    night_players_message[Role.seer] = ["Seers type: /msg $user see "+
+    night_players_message[Role.seer] = ["Seers type: /msg $bot see "+
                                         "<target> to see. You have $num seconds."]
 
     #message for wolves at night
-    night_player_message[Role.wolf] = ["Wolf type: /msg $user kill "+
+    night_player_message[Role.wolf] = ["Wolf type: /msg $bot kill "+
                                        "<target> to kill. You have $num seconds."]
-    night_players_message[Role.wolf] = ["Wolves type: /msg $user kill "+
+    night_players_message[Role.wolf] = ["Wolves type: /msg $bot kill "+
                                         "<target> to kill. You have $num seconds."]
 
     #message for guardians at night
-    night_player_message[Role.guardian] = ["Guardian type: /msg $user "+
+    night_player_message[Role.guardian] = ["Guardian type: /msg $bot "+
                                            "guard <target> to guard. You have $num "+
                                            "seconds."]
-    night_players_message[Role.guardian] = ["Guardians type: /msg $user "+
+    night_players_message[Role.guardian] = ["Guardians type: /msg $bot "+
                                             "guard <target> to guard. You have $num "+
                                             "seconds."]
 
@@ -403,9 +405,24 @@ class Theme:
 
     win_wolves_message = ["The wolves have won."]
     win_villagers_message = ["The villagers have won."]
-    win_wolves_list_message = ["The wolves were: $wolves"]
+
+    win_list_message = [None for i in xrange(Role.num)]
+    win_list_message[Role.wolf] = ["The wolf was: $roles"]
+    win_list_message[Role.seer] = ["The seer was: $roles"]
+    win_list_message[Role.guard] = ["The guard was: $roles"]
+    win_list_message[Role.angel] = ["The angel was: $roles"]
+    win_list_message[Role.traitor] = ["The traitor was: $roles"]
+
+    win_lists_message = [None for i in xrange(Role.num)]
+    win_lists_message[Role.wolf] = ["The wolves were: $roles"]
+    win_lists_message[Role.seer] = ["The seers were: $roles"]
+    win_lists_message[Role.guard] = ["The guards were: $roles"]
+    win_lists_message[Role.angel] = ["The angels were: $roles"]
+    win_lists_message[Role.traitor] = ["The traitors were: $roles"]
 
     ### MISCELLANEOUS ###
     
+    game_starting_message = ["A game is gonna start soon, type !join to join it"]
+    game_in_progess_message = ["A game is in progress."]
     randplayer_message = ["Random player is $target."]
     not_player_message = ["Sorry you aren't a player."]

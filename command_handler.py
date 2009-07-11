@@ -33,13 +33,13 @@ class Command_Handler:
 
         e_msg = Command_Message(e, msg)
 
-        if hasattr(self, e_msg.command):
+        if hasattr(self, "cmd_" + e_msg.command):
             do_cmd = getattr(self, "cmd_" + e_msg.command)
             do_cmd(self.c, e_msg)
         else:
             if e_msg.command in self.callbacks:
                 try:
-                    self.callbacks[e_msg.command](e_msg.nick, *e_msg.args)
+                    self.callbacks[e_msg.command](e_msg.nick, e_msg.args)
                 except Exception as exc:
                     print "Failed to process command [%s] from nick [%s]." \
                             % (e_msg.raw_message, e_msg.nick)
@@ -50,12 +50,12 @@ class Command_Handler:
                     " can only be used when a game is running." +
                     " Start one with: !start")
             else:
-                self.irc.send_notice(who, e_msg.command +
+                self.irc.send_notice(e_msg.nick, e_msg.command +
                     " is an unknown command." +
                     " For the list of commands type: !help")
 
 
-    def help(self, who, e):
+    def help(self, c, e):
         #TODO: Move out to theme class
         self.irc.send_notice(who, "To start of a game of Werewolf type: !start")
         self.irc.send_notice(who, "To join a running game," +
@@ -65,13 +65,15 @@ class Command_Handler:
         self.irc.send_notice(who, "The rest of the commands will be explained" +
                                     " in game just read my messages.")
 
-    def cmd_die(self, who, e):
+    def cmd_die(self, c, e):
+        who = e.nick
         if self.irc.is_admin(who):
             self.irc.die(msg="rAwr")
         else:
             self.irc.send_message("Help! %s tried to kill me :'(" % who)
 
-    def cmd_end(self, who, e):
+    def cmd_end(self, c, e):
+        who = e.nick
         if self.irc.is_admin(who):
             self.irc.end_game()
         else:
