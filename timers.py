@@ -48,12 +48,12 @@ class Timers:
         return None
 
     def process_timeout(self):
-        while len(self._timers) > 0:
+        while self._timers:
             if time.time() >= self._timers[0].timeout:
                 ttimer = self._timers[0]
                 if self._timers[0].method != None:
                     self._timers[0].method(*self._timers[0].arguments)
-                if len(self._timers[0]) > 0:
+                if self._timers:
                     if ttimer == self._timers[0]:
                         del self._timers[0]
             else:

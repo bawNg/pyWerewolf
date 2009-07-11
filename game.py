@@ -29,6 +29,7 @@ class Game(object):
 
     def _rem_player(self, who):
         if who.lower() in self.players:
+            #TODO: unvoice player
             del self.players[who.lower()]
 
     def _check_win(self):
@@ -201,7 +202,7 @@ class Game(object):
             self.day_start()
 
     def day_start(self):
-        #TODO: voice everyone
+        self.irc.voice_users(self.players.keys())
         self.mode = Mode.day_talk
         self.theme.reset()
         self.theme.num = Consts.talk_time
@@ -209,7 +210,6 @@ class Game(object):
         self.timers.add_timer(Consts.talk_time, self.vote_start)
 
     def vote_start(self):
-        #TODO: tell people how to vote
         self.theme.reset()
         self.theme.num = Consts.vote_time
         self._chan_message(self.theme.vote_start_message)
@@ -219,13 +219,14 @@ class Game(object):
     def vote_end(self):
         self.theme.reset()
         self._chan_message(self.theme.vote_end_message)
-        
-        #TODO: unvoice everyone
+        self.irc.unvoice_everyone() 
         #TODO: tally votes
         #TODO: kill player
-        #TODO: check win
-        #TODO: show night after vote message
-        #TODO: start_night
+        #TODO: good kills
+        if not self._check_win():
+            self.theme.reset()
+            self._chan_message(self.theme.night_after_message)
+            self.night_start()
         pass
 
     def join(self, who, args):

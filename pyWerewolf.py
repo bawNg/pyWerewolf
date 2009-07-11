@@ -98,7 +98,7 @@ class WerewolfBot(SingleServerIRCBot):
     def reset_modes(self):
         voiced_nicks = self.channels[self.channel].voiced()
         self.set_moderated(False)
-        self.devoice_users(voiced_nicks)
+        self.devoice_users(voiced_nicks,True)
 
     def unvoice_everyone(self):
         voiced_nicks = self.channels[self.channel].voiced()
@@ -126,7 +126,7 @@ class WerewolfBot(SingleServerIRCBot):
             nicks = ""
             for t in targets[start:end]: nicks += "%s " % t
             modes = "+%s %s" % ('v'*(end-start), nicks)
-            if unmoderate: modes = "+m%s" % modes[1:]
+            if unmoderate: modes = "-m%s" % modes[1:]
             self.set_modes(modes)
 
     ### Game Management Methods ###
