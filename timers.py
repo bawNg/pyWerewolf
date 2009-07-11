@@ -5,16 +5,18 @@ import time
 class Timers:
     class Timer:
         def __init__(self, timeout=None, method=None, args=None):
-            self.timeout   = timeout
-            self.method    = method
+            self.is_expired = False
+            self.timeout    = timeout
+            self.method     = method
             if type(args) == tuple:
                 self.arguments = args
             else:
                 self.arguments = (args,)
+
         def set_timeleft(self, time_left): self.timeout = time.time()+time_left
         def extend(self, delay): self.timeout += delay
         def get_timeleft(self): return self.timeout - time.time()
-        def remove(self): self.method = None
+        def remove(self): self.is_expired = True
         def __cmp__(self, other): return self.timeout - other.timeout
         def __repr__(self): return '<Timer "%d">' % self.timeout
         time_left = property(get_timeleft)
@@ -50,11 +52,10 @@ class Timers:
     def process_timeout(self):
         while self._timers:
             if time.time() >= self._timers[0].timeout:
-                ttimer = self._timers[0]
-                if self._timers[0].method != None:
+                if not self._timers[0].is_expired:
+                    self._timers[0].is_expired = True
                     self._timers[0].method(*self._timers[0].arguments)
                 if self._timers:
-                    if ttimer == self._timers[0]:
-                        del self._timers[0]
+                    if self._timers[0].is_expired: del self._timers[0]
             else:
                 break
