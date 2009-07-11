@@ -10,12 +10,12 @@ class Command_Message:
         self.target         = e.target()            # target user/channel to reply to
         self.nick           = nm_to_n(e.source())   # source user's nickname
         self.raw_message    = msg                   # raw message sent by user
-        self.command        = msg.split(" ")[0]     # command string is the first word
+        self.command        = msg.split()[0].lower()# command string is the first word
         self.payload        = None                  # payload is the first argument
         self.args           = None                  # all arguments given after command
-        if len(msg.split(" ")) >= 2:
-            self.payload = msg.split(" ")[1]
-            self.args    = msg.split(" ")[1:]
+        if len(msg.split()) >= 2:
+            self.payload = msg.split()[1]
+            self.args    = msg.split()[1:]
 
 class Command_Handler:
     def __init__(self, bot):
@@ -55,7 +55,7 @@ class Command_Handler:
                     " For the list of commands type: !help")
 
 
-    def help(self, c, e):
+    def cmd_help(self, c, e):
         #TODO: Move out to theme class
         self.irc.send_notice(who, "To start of a game of Werewolf type: !start")
         self.irc.send_notice(who, "To join a running game," +
