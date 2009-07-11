@@ -23,7 +23,8 @@ class Mode:
     day_vote    = 3
 
 class Theme:
-    def __init__(self):
+    def __init__(self, bot):
+        self.irc = bot
         self.tokens = ["bot", "num", "user", "target", 
                        "votes", "roles", "alive"]
         for token in self.tokens:
@@ -45,7 +46,7 @@ class Theme:
     def reset(self):
         for token in self.tokens:
             setattr(self, token, "")
-        self.bot = self.irc.getnicknaem()
+        self.bot = self.irc.connection.get_nickname()
         
     ### Role Names ###
     role_names = ["Villager", "Werewolf", "Seer", "Guardian", "Angel"]
@@ -409,14 +410,14 @@ class Theme:
     win_list_message = [None for i in xrange(Role.num)]
     win_list_message[Role.wolf] = ["The wolf was: $roles"]
     win_list_message[Role.seer] = ["The seer was: $roles"]
-    win_list_message[Role.guard] = ["The guard was: $roles"]
+    win_list_message[Role.guardian] = ["The guard was: $roles"]
     win_list_message[Role.angel] = ["The angel was: $roles"]
     win_list_message[Role.traitor] = ["The traitor was: $roles"]
 
     win_lists_message = [None for i in xrange(Role.num)]
     win_lists_message[Role.wolf] = ["The wolves were: $roles"]
     win_lists_message[Role.seer] = ["The seers were: $roles"]
-    win_lists_message[Role.guard] = ["The guards were: $roles"]
+    win_lists_message[Role.guardian] = ["The guards were: $roles"]
     win_lists_message[Role.angel] = ["The angels were: $roles"]
     win_lists_message[Role.traitor] = ["The traitors were: $roles"]
 

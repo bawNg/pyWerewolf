@@ -10,9 +10,9 @@ class Game(object):
         self.irc = bot
         self.c  = bot.connection
         self.timers = bot.timers
-        self.theme = Theme()
+        self.theme = Theme(bot)
         self.players = {}
-        self.roles = [[] for i in xrange(Role.roles)]
+        self.roles = [[] for i in xrange(Role.num)]
         self.mode = Mode.join
         self._start(who)
 
@@ -156,14 +156,14 @@ class Game(object):
             if role == self.players[player].role.role:
                 ans.append(self.players[player])
         return ans
-    
+
     def _reset_players(self):
         for player in self.players:
             self.players[player].reset()
 
     def _get_vote_tally(self):
         pass
-            
+
     def _start(self, who):
         #register callbacks
         for cb in Commands.game:
@@ -212,7 +212,7 @@ class Game(object):
             time = Consts.night_wolf_time
         else:
             time = Consts.night_wolves_time
-    
+
         self.theme.reset()
         self.theme.num = time
         self._reset_players()
@@ -269,7 +269,7 @@ class Game(object):
                     self.theme.target = player.see
                     role = self.players[player.see.lower()].role.appears_as
                     self._notice(player.name, self.theme.see_message[role])
-                else: 
+                else:
                     pass #player left, do nothing
 
         #kill wolf target
@@ -283,7 +283,7 @@ class Game(object):
         else:
             self.theme.reset()
             self._chan_message(self.theme.kill_die_message[Role.noone])
-        
+
         #if the game hasn't been won start the next day
         if not self._check_win():
             self.day_start()
@@ -356,6 +356,7 @@ class Game(object):
                 self._rem_player(who)
 
     def vote(self, who, args):
+        print "vote", who, args
         if who.lower() in self.players:
             if len(args) == 1:
                 if self.mode == Mode.day_vote:
@@ -363,7 +364,10 @@ class Game(object):
                     if target.lower() in self.players:
                         tplayer = self.players[who.lower()]
                         #TODO update vote nd output
-                        pass
+                        tplayer.vote = target
+                        self.theme.reset()
+                        self.theme.target = target
+                        self._chan_message(self.theme.vote_target_message)
                     else:
                         self.theme.reset()
                         self.theme.target = target
@@ -382,51 +386,105 @@ class Game(object):
             self._notice(who, self.theme.not_player_message)
 
     def kill(self, who, args):
+        print "kill", who, args
         if who.lower() in self.players:
             if len(args) == 1:
-                if self.mode == Mode.night:
-                    #TODO: update vote and output
-                    pass
+                player = self.players[who.lower()]
+                target = self.players[args[0].lower()]
+                self.theme.reset()
+                self.theme.user = player.nick
+                self.theme.target = target.nick
+                if target not in self.players:
+                    # target is not in the game
+                    self._notice(who, self.theme.kill_invalid_target_message)
+                elif self.mode == Mode.night:
+                    # its night time
+                    if player.role.role != Role.wolf:
+                        # player is not a wolf
+                        self._notice(who, self.theme.kill_not_wolf_message)
+                    elif target.role.role == Role.wolf:
+                        # target is a wolf
+                        self._notice(who, self.theme.kill_invalid_wolf_message)
+                    elif player.role.role == Role.wolf:
+                        # player is a wolf
+                        players[who.lower()].kill = args[0]
+                        if len(self.wolves) == 1:
+                            self._notice(who, self.theme.kill_wolf_message)
+                        else:
+                            self._notice(who, self.theme.kill_wolves_message)
                 else:
-                    #TODO: output not valid time
-                    pass
+                    # its not night time
+                    self._notice(who, self.theme.kill_not_night_message)
             else:
-                #TODO: output invalid format
-                pass
+                self.theme.reset()
+                self.theme.user = self.players[who.lower()].nick
+                self._notice(who, self.theme.kill_invalid_message)
         else:
             self.theme.reset()
             self.theme.user = self.theme.target = who
             self._notice(who, self.theme.not_player_message)
 
     def guard(self, who, args):
+        print "guard", who, args
         if who.lower() in self.players:
             if len(args) == 1:
-                if self.mode == Mode.day_vote:
-                    #TODO: update vote and output
-                    pass
+                player = self.players[who.lower()]
+                target = self.players[args[0].lower()]
+                self.theme.reset()
+                self.theme.user = player.nick
+                self.theme.target = target.nick
+                if target not in self.players:
+                    # target is not in the game
+                    self._notice(who, self.theme.guard_invalid_target_message)
+                elif self.mode == Mode.night:
+                    # its night time
+                    if player.role.role != Role.guardian:
+                        # player is not a guard
+                        self._notice(who, self.theme.guard_not_guard_message)
+                    elif player.role.role == Role.guardian:
+                        # player is a guard
+                        player.guard = target.nick
+                        self._notice(who, self.theme.guard_target_message)
                 else:
-                    #TODO: output not valid time
-                    pass
+                    # its not night time
+                    self._notice(who, self.theme.guard_not_night_message)
             else:
-                #TODO: output invalid format
-                pass
+                self.theme.reset()
+                self.theme.user = self.players[who.lower()].nick
+                self._notice(who, self.theme.guard_invalid_message)
         else:
             self.theme.reset()
             self.theme.user = self.theme.target = who
             self._notice(who, self.theme.not_player_message)
 
     def see(self, who, args):
+        print "see", who, args
         if who.lower() in self.players:
             if len(args) == 1:
-                if self.mode == Mode.day_vote:
-                    #TODO: update vote and output
-                    pass
+                player = self.players[who.lower()]
+                target = self.players[args[0].lower()]
+                self.theme.reset()
+                self.theme.user = player.nick
+                self.theme.target = target.nick
+                if target not in self.players:
+                    # target is not in the game
+                    self._notice(who, self.theme.see_invalid_target_message)
+                elif self.mode == Mode.night:
+                    # its night time
+                    if player.role.role != Role.seer:
+                        # player is not a guard
+                        self._notice(who, self.theme.see_not_seer_message)
+                    elif player.role.role == Role.seer:
+                        # player is a guard
+                        player.guard = target.nick
+                        self._notice(who, self.theme.see_target_message)
                 else:
-                    #TODO: output not valid time
-                    pass
+                    # its not night time
+                    self._notice(who, self.theme.see_not_night_message)
             else:
-                #TODO: output invalid format
-                pass
+                self.theme.reset()
+                self.theme.user = self.players[who.lower()].nick
+                self._notice(who, self.theme.see_invalid_message)
         else:
             self.theme.reset()
             self.theme.user = self.theme.target = who
@@ -466,4 +524,3 @@ class Game(object):
                 self._chan_message(self.theme.join_leave_nick_message)
                 self._rem_player(old)
                 self.irc.devoice_users([new])
-
