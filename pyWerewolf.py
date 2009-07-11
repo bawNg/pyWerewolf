@@ -89,8 +89,11 @@ class WerewolfBot(SingleServerIRCBot):
                 self.reset_modes()
 
     ### Wrapper Methods ###
-    def send_message(self, target, msg):
-        self.connection.privmsg(target, msg)
+    def send_message(self, *args):
+        if len(args) == 1:
+            self.connection.privmsg(self.channel, args[0])
+        elif len(args) == 2:
+            self.connection.privmsg(args[0], args[1])
 
     def send_notice(self, target, msg):
         self.connection.notice(target, msg)
@@ -142,32 +145,9 @@ class WerewolfBot(SingleServerIRCBot):
             self.game = None
 
     ### Miscellaneous ###
-    def help(self, who, args):
-        self.send_notice(who, "To start of a game of Werewolf type: !start")
-        self.send_notice(who, "To join a running game," +
-                              " while joins are being accepted, type: !join")
-        self.send_notice(who, "While a game is running and talking is allowed," +
-                              " to name a random player type: !randplayer")
-        self.send_notice(who, "The rest of the commands will be explained in game" +
-                              " just read my messages.")
-
     def is_admin(self, nick):
         if nick.lower() in config.irc.admins: return True
         return False
-
-    def cmd_die(self, who, args):
-        if self.is_admin(who):
-            self.die(msg="rAwr")
-        else:
-            self.send_message(self.channel, "Help! " + who + " tried to kill me :'(")
-
-    def cmd_end(self, who, args):
-        if self.is_admin(who):
-            self.end_game()
-        else:
-            self.send_message(self.channel, "Help! " + who + " tried to end my fun :'(")
-
-
     def process_forever(self):
         self._connect()
         while 1:
