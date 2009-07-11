@@ -70,17 +70,21 @@ class WerewolfBot(SingleServerIRCBot):
     def on_kick(self, c, e):
         self.on_quit(c, e)
 
+    def on_join(self, c, e):
+        nick = nm_to_n(e.source())
+        self.send_message("%s has joined the channel" % nick)
+
     def on_part(self, c, e):
-        self.on_quit(c, e)
+        nick = nm_to_n(e.source())
+        self.send_message("%s has left the channel" % nick)
 
     def on_quit(self, c, e):
-        self.callbacks.run_leave(c, e)
-
-    def on_join(self, c, e):
-        self.callbacks.run_join(c, e)
+        self.on_part(c, e)
 
     def on_nick(self, c, e):
-        self.callbacks.run_nick(c, e)
+        target  = e.target()
+        nick    = nm_to_n(e.source())
+        self.send_message("%s has changed their nick to %s" % (nick, target))
 
     def on_mode(self, c, e):
         nick = nm_to_n(e.source())
