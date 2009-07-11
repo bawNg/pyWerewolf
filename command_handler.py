@@ -57,27 +57,33 @@ class Command_Handler:
 
     def cmd_help(self, c, e):
         #TODO: Move out to theme class
-        self.irc.send_notice(who, "To start of a game of Werewolf type: !start")
-        self.irc.send_notice(who, "To join a running game," +
+        self.irc.send_notice(e.nick, "To start of a game of Werewolf type: !start")
+        self.irc.send_notice(e.nick, "To join a running game," +
                               " while joins are being accepted, type: !join")
-        self.irc.send_notice(who, "While a game is running and talking is" +
+        self.irc.send_notice(e.nick, "While a game is running and talking is" +
                         " allowed, to name a random player type: !randplayer")
-        self.irc.send_notice(who, "The rest of the commands will be explained" +
+        self.irc.send_notice(e.nick, "The rest of the commands will be explained" +
                                     " in game just read my messages.")
 
+    def cmd_say(self, c, e):
+        if self.irc.is_admin(e.nick):
+            c.privmsg(e.payload, e.raw_message[len(e.command)+len(e.payload)+2:])
+
+    def cmd_send(self, c, e):
+        if self.irc.is_admin(e.nick):
+            c.send_raw(e.raw_message[len(e.command)+1:])
+
     def cmd_die(self, c, e):
-        who = e.nick
-        if self.irc.is_admin(who):
+        if self.irc.is_admin(e.nick):
             self.irc.die(msg="rAwr")
         else:
-            self.irc.send_message("Help! %s tried to kill me :'(" % who)
+            self.irc.send_message("Help! %s tried to kill me :'(" % e.nick)
 
     def cmd_end(self, c, e):
-        who = e.nick
-        if self.irc.is_admin(who):
+        if self.irc.is_admin(e.nick):
             self.irc.end_game()
         else:
-            self.irc.send_message("Help! %s tried to end my fun :'(" % who)
+            self.irc.send_message("Help! %s tried to end my fun :'(" % e.nick)
 
     def reg_callback(self, command, callback):
         """command is the command that will be linked to the callback
