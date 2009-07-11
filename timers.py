@@ -33,9 +33,11 @@ class Timers:
 
     def set_timeleft(self, timer, time_left):
         self._timers[timer].set_timeleft(time_left)
+        self._timers.sort()
 
     def extend_timer(self, timer, delay):
         self._timers[timer].extend(delay)
+        self._timers.sort()
 
     def remove_all(self):
         self._timers = []
@@ -46,10 +48,13 @@ class Timers:
         return None
 
     def process_timeout(self):
-        while self._timers:
+        while len(self._timers) > 0:
             if time.time() >= self._timers[0].timeout:
+                ttimer = self._timers[0]
                 if self._timers[0].method != None:
                     self._timers[0].method(*self._timers[0].arguments)
-                del self._timers[0]
+                if len(self._timers[0]) > 0:
+                    if ttimer == self._timers[0]:
+                        del self._timers[0]
             else:
                 break

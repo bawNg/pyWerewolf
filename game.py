@@ -28,9 +28,11 @@ class Game(object):
         self.players[who.lower()] = Player(who)
 
     def _rem_player(self, who):
-        pass #TODO: remove player from player list and check if game ended
+        if who.lower() in self.players:
+            del self.players[who.lower()]
 
     def _check_win(self):
+        #TODO: end game if win and print appropriate messages
         return False#TODO: count num wolves and num villagers
 
     def _assign_roles(self):
@@ -127,6 +129,10 @@ class Game(object):
             if role == self.players[player].role.role:
                 ans += 1
         return ans
+    
+    def _reset_players(self):
+        for player in self.players:
+            self.players[player].reset()
             
     def _start(self, who):
         #register callbacks
@@ -138,9 +144,10 @@ class Game(object):
         #setup game info
         self.theme.reset()
         self.theme.user = who
+        self.theme.num = Consts.join_time
         self._chan_message(self.theme.game_start_message)
         self._add_player(who)
-        self.timers.add_timer(15, self.join_end)
+        self.timers.add_timer(Consts.join_time, self.join_end)
 
     def restart(self, who, args):
         self._notice(who, self.theme.game_started_message)
@@ -151,12 +158,12 @@ class Game(object):
         self.irc.callbacks.unreg_leave_callback()
         self.irc.callbacks.unreg_nick_callback()
         self.timers.remove_all()
+        self.irc.reset_modes()
 
-    def join_end(self, t=None, t2=None):
-        if len(self.players) >= 3:
+    def join_end(self):
+        if len(self.players) >= Consts.min_players:
             self.irc.reset_modes()
             self.irc.set_moderated()
-            self.mode = Mode.processing
             self.theme.reset()
             self.theme.num = str(len(self.players))
             self._chan_message(self.theme.join_end_message)
@@ -172,7 +179,13 @@ class Game(object):
 
     def night_start(self):
         self.theme.reset()
-        self.theme.num = 75
+        time = 0
+        if self._num(Role.wolf) == 1:
+            time = Consts.night_wolf_time
+        else:
+            time = Consts.night_wolves_time
+    
+        self.theme.num = time
         self.mode = Mode.night
         for role in [Role.wolf, Role.seer, Role.guardian]:
             if self._is_alive(role):
@@ -180,29 +193,33 @@ class Game(object):
                     self._chan_message(self.theme.night_player_message[role])
                 else:
                     self._chan_message(self.theme.night_players_message[role])
-        self.timers.add_timer(15, self.night_end)
-        pass
+        self.timers.add_timer(time, self.night_end)
 
     def night_end(self):
-        self.mode = Mode.processing
         #TODO: output results of night
         if not self._check_win():
             self.day_start()
-        else:
-            #TODO: end game 
-            pass
 
     def day_start(self):
-        #TODO: Voice alive people
-        self.timers.add_timer(15, self.vote_start)
-        pass
+        #TODO: voice everyone
+        self.mode = Mode.day_talk
+        self.theme.reset()
+        self.theme.num = Consts.talk_time
+        self._chan_message(self.theme.day_start_message)
+        self.timers.add_timer(Consts.talk_time, self.vote_start)
 
     def vote_start(self):
         #TODO: tell people how to vote
-        self.timers.add_timer(15, self.vote_end)
+        self.theme.reset()
+        self.theme.num = Consts.vote_time
+        self._chan_message(self.theme.vote_start_message)
+        self.timers.add_timer(Consts.vote_time, self.vote_end)
         pass
 
     def vote_end(self):
+        self.theme.reset()
+        self._chan_message(self.theme.vote_end_message)
+        
         #TODO: unvoice everyone
         #TODO: tally votes
         #TODO: kill player
@@ -219,8 +236,9 @@ class Game(object):
                 self.theme.user = who
                 self.theme.num  = str(len(self.players))
                 self._chan_message(self.theme.join_new_message)
-                if self.timers.get_timer(self.join_end).time_left < 10:
-                    self.timers.get_timer(self.join_end).set_timeleft(10)
+                time = Consts.join_extend_time
+                if self.timers.get_timer(self.join_end).time_left < time:
+                    self.timers.get_timer(self.join_end).set_timeleft(time)
             else:
                 self.theme.reset()
                 self.theme.user = who
@@ -228,65 +246,119 @@ class Game(object):
         else:
             self._notice(who, self.theme.join_ended_message)
 
-    def vote(self, who, args):
-        if len(args) == 1:
-            if self.mode == Mode.day_vote:
-                #TODO: update vote and output
-                pass
+    def leave(self, who, args=None):
+        if who.lower() in self.players:
+            self.theme.reset()
+            self.theme.user = self.theme.target = who
+            if self.mode != Mode.join:
+                role = self.players[who.lower()].role.role
+                self._chan_message(self.theme.leave_kill_message[role])
+                self._rem_player(who)
+                self._check_win()
             else:
-                #TODO: output not valid time
-                pass
+                self._chan_message(self.theme.join_leave_message)
+                self._rem_player(who)
+
+    def vote(self, who, args):
+        if who.lower() in self.players:
+            if len(args) == 1:
+                if self.mode == Mode.day_vote:
+                    target = args[0]
+                    if target.lower() in self.players:
+                        #TODO update vote nd output
+                        pass
+                    else:
+                        self.theme.reset()
+                        self.theme.target = target
+                        self._notice(who, self.theme.vote_invalid_target_message)
+                else:
+                    self.theme.reset()
+                    self.theme.user = self.theme.target = who
+                    self._notice(who, self.theme.vote_not_vote_time_message)
+            else:
+                self.theme.reset()
+                self.theme.user = self.theme.target = who
+                self._notice(who, self.theme.vote_invalid_message)
         else:
-            #TODO: output invalid format
-            pass
+            self.theme.reset()
+            self.theme.user = self.theme.target = who
+            self._notice(who, self.theme.not_player_message)
 
     def kill(self, who, args):
-        if len(args) == 1:
-            if self.mode == Mode.night:
-                #TODO: update vote and output
-                pass
+        if who.lower() in self.players:
+            if len(args) == 1:
+                if self.mode == Mode.night:
+                    #TODO: update vote and output
+                    pass
+                else:
+                    #TODO: output not valid time
+                    pass
             else:
-                #TODO: output not valid time
+                #TODO: output invalid format
                 pass
         else:
-            #TODO: output invalid format
-            pass
+            self.theme.reset()
+            self.theme.user = self.theme.target = who
+            self._notice(who, self.theme.not_player_message)
 
     def guard(self, who, args):
-        if len(args) == 1:
-            if self.mode == Mode.night:
-                #TODO: update vote and output
-                pass
+        if who.lower() in self.players:
+            if len(args) == 1:
+                if self.mode == Mode.day_vote:
+                    #TODO: update vote and output
+                    pass
+                else:
+                    #TODO: output not valid time
+                    pass
             else:
-                #TODO: output not valid time
+                #TODO: output invalid format
                 pass
         else:
-            #TODO: output invalid format
-            pass
+            self.theme.reset()
+            self.theme.user = self.theme.target = who
+            self._notice(who, self.theme.not_player_message)
 
     def see(self, who, args):
-        if len(args) == 1:
-            if self.mode == Mode.night:
-                #TODO: update vote and output
-                pass
+        if who.lower() in self.players:
+            if len(args) == 1:
+                if self.mode == Mode.day_vote:
+                    #TODO: update vote and output
+                    pass
+                else:
+                    #TODO: output not valid time
+                    pass
             else:
-                #TODO: output not valid time
+                #TODO: output invalid format
                 pass
         else:
-            #TODO: output invalid format
-            pass
+            self.theme.reset()
+            self.theme.user = self.theme.target = who
+            self._notice(who, self.theme.not_player_message)
 
     def randplayer(self, who, args):
         if self.mode in [Mode.day_talk, Mode.day_vote]:
             tplayers = []
             for player in self.players:
                 tplayers.append(player.nick)
-            self.theme.user = tplayers[random.randint(0, len(tplayers)-1)]
-            #TODO: print to channnel the random name
+            user = tplayers[random.randint(0, len(tplayers)-1)]
+            self.theme.reset()
+            self.theme.user = self.theme.target = user
+            self._chan_message(self.theme.randplayer_message)
 
     def player_leave(self, who):
-        self._rem_player(who)
+        self.leave(who)
 
     def player_nick(self, old, new):
         """player nick change"""
-        self.player_leave(old)
+        if old.lower() in self.players:
+            self.theme.reset()
+            self.theme.user = self.theme.target = old 
+            if self.mode != Mode.join:
+                role = self.players[old.lower()].role.role
+                self._chan_message(self.theme.leave_kill_message[role])
+                self._rem_player(old)
+                self._check_win()
+            else:
+                self._chan_message(self.theme.join_leave_nick_message)
+                self._rem_player(old)
+
