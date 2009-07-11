@@ -8,7 +8,6 @@ from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_nu
 
 from command_handler import *
 from timers import *
-from callbacks import *
 from game import *
 import config
 
@@ -19,15 +18,10 @@ class WerewolfBot(SingleServerIRCBot):
         self.command_handler = Command_Handler(self)
         self.connection.add_global_handler("all_events", self.on_all_events, -100)
         self.timers = Timers()
-        self.callbacks = Callbacks(self)
 
         #game
         self.game = None
-        self.callbacks.reg_callback("start", self.start_game)
-        self.callbacks.reg_callback("help", self.help)
-        #TODO: remove these callbacks
-        self.callbacks.reg_callback("die", self.cmd_die)
-        self.callbacks.reg_callback("end", self.cmd_end)
+        self.command_handler.reg_callback("start", self.start_game)
 
     ### IRC Events ###
     def on_all_events(self, c, e):
