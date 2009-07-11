@@ -118,7 +118,7 @@ class Game(object):
             self.theme.reset()
             self.theme.num = str(num_angels)
             self._chan_message(self.theme.role_num_message[Role.angel])
-            
+
     def _is_alive(self, role):
         for player in self.players:
             if role == self.players[player].role.role:
@@ -150,9 +150,7 @@ class Game(object):
     def _start(self, who):
         #register callbacks
         for cb in Commands.game:
-            self.irc.callbacks.reg_callback(cb, getattr(self, cb))
-        self.irc.callbacks.reg_leave_callback(self.player_leave)
-        self.irc.callbacks.reg_nick_callback(self.player_nick)
+            self.irc.command_handler.reg_callback(cb, getattr(self, cb))
 
         #setup game info
         self.theme.reset()
@@ -167,9 +165,7 @@ class Game(object):
 
     def end(self):
         for cb in Commands.game:
-            self.irc.callbacks.unreg_callback(cb)
-        self.irc.callbacks.unreg_leave_callback()
-        self.irc.callbacks.unreg_nick_callback()
+            self.irc.command_handler.unreg_callback(cb)
         self.timers.remove_all()
         self.irc.reset_modes()
 
@@ -293,7 +289,7 @@ class Game(object):
     def vote_end(self):
         self.theme.reset()
         self._chan_message(self.theme.vote_end_message)
-        self.irc.unvoice_everyone() 
+        self.irc.unvoice_everyone()
         #TODO: tally votes
         #TODO: kill player
         #TODO: good kills
@@ -421,14 +417,19 @@ class Game(object):
             self.theme.user = self.theme.target = user
             self._chan_message(self.theme.randplayer_message)
 
-    def player_leave(self, who):
+    def on_channel_join(self, who):
+        time = Consts.join_extend_time
+        if self.timers.get_timer(self.join_end).time_left < time:
+            self.timers.get_timer(self.join_end).set_timeleft(time)
+        #TODO: alert user that a game is about to start
+
+    def on_player_channel_leave(self, who):
         self.leave(who)
 
-    def player_nick(self, old, new):
-        """player nick change"""
+    def on_player_nick_change(self, old, new):
         if old.lower() in self.players:
             self.theme.reset()
-            self.theme.user = self.theme.target = old 
+            self.theme.user = self.theme.target = old
             if self.mode != Mode.join:
                 role = self.players[old.lower()].role.role
                 self._chan_message(self.theme.leave_kill_message[role])

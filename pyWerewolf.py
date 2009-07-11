@@ -8,7 +8,6 @@ from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_nu
 
 from command_handler import *
 from timers import *
-from callbacks import *
 from game import *
 import config
 
@@ -19,15 +18,10 @@ class WerewolfBot(SingleServerIRCBot):
         self.command_handler = Command_Handler(self)
         self.connection.add_global_handler("all_events", self.on_all_events, -100)
         self.timers = Timers()
-        self.callbacks = Callbacks(self)
 
         #game
         self.game = None
-        self.callbacks.reg_callback("start", self.start_game)
-        self.callbacks.reg_callback("help", self.help)
-        #TODO: remove these callbacks
-        self.callbacks.reg_callback("die", self.cmd_die)
-        self.callbacks.reg_callback("end", self.cmd_end)
+        self.command_handler.reg_callback("start", self.start_game)
 
     ### IRC Events ###
     def on_all_events(self, c, e):
@@ -70,17 +64,24 @@ class WerewolfBot(SingleServerIRCBot):
     def on_kick(self, c, e):
         self.on_quit(c, e)
 
-    def on_part(self, c, e):
-        self.on_quit(c, e)
-
-    def on_quit(self, c, e):
-        self.callbacks.run_leave(c, e)
-
     def on_join(self, c, e):
-        self.callbacks.run_join(c, e)
+        nick = nm_to_n(e.source())
+        self.send_message("%s has joined the channel" % nick)
+        if self.game: self.game.on_channel_join(nick)
+
+    def on_part(self, c, e):
+        nick = nm_to_n(e.source())
+        self.send_message("%s has left the channel" % nick)
+        if self.game: self.game.on_player_channel_leave(nick)
 
     def on_nick(self, c, e):
-        self.callbacks.run_nick(c, e)
+        target  = e.target()
+        nick    = nm_to_n(e.source())
+        self.send_message("%s has changed their nick to %s" % (nick, target))
+        if self.game: self.game.on_player_nick_change(nick, target)
+
+    def on_quit(self, c, e):
+        self.on_part(c, e)
 
     def on_mode(self, c, e):
         nick = nm_to_n(e.source())
@@ -89,8 +90,11 @@ class WerewolfBot(SingleServerIRCBot):
                 self.reset_modes()
 
     ### Wrapper Methods ###
-    def send_message(self, target, msg):
-        self.connection.privmsg(target, msg)
+    def send_message(self, *args):
+        if len(args) == 1:
+            self.connection.privmsg(self.channel, args[0])
+        elif len(args) == 2:
+            self.connection.privmsg(args[0], args[1])
 
     def send_notice(self, target, msg):
         self.connection.notice(target, msg)
@@ -142,32 +146,9 @@ class WerewolfBot(SingleServerIRCBot):
             self.game = None
 
     ### Miscellaneous ###
-    def help(self, who, args):
-        self.send_notice(who, "To start of a game of Werewolf type: !start")
-        self.send_notice(who, "To join a running game," +
-                              " while joins are being accepted, type: !join")
-        self.send_notice(who, "While a game is running and talking is allowed," +
-                              " to name a random player type: !randplayer")
-        self.send_notice(who, "The rest of the commands will be explained in game" +
-                              " just read my messages.")
-
     def is_admin(self, nick):
         if nick.lower() in config.irc.admins: return True
         return False
-
-    def cmd_die(self, who, args):
-        if self.is_admin(who):
-            self.die(msg="rAwr")
-        else:
-            self.send_message(self.channel, "Help! " + who + " tried to kill me :'(")
-
-    def cmd_end(self, who, args):
-        if self.is_admin(who):
-            self.end_game()
-        else:
-            self.send_message(self.channel, "Help! " + who + " tried to end my fun :'(")
-
-
     def process_forever(self):
         self._connect()
         while 1:
