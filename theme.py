@@ -192,7 +192,7 @@ class Theme:
         #$user is person calling the command
         #$target is the result of the command
 
-class WerewolfTheme(Theme)
+class WerewolfTheme(Theme):
     def __init__(self):
         Theme.__init__(self)
         self.commands[Command.start]        = "start"
@@ -208,7 +208,7 @@ class WerewolfTheme(Theme)
         t = Type    #alias for Type
         r = Role    #alias for Role
 
-        #Messages for game
+        ### GAME MESSAGES ###
         m[t.game][r.Game.start][r.noone]         = ["$user started a new game! "+
             "You have $num seconds to join!"]
         m[t.game][r.Game.started][r.noone]       = ["Game already running."]
@@ -219,4 +219,152 @@ class WerewolfTheme(Theme)
         m[t.game][r.Game.join_none][r.noone]     = ["No game is running. Start "+
             "one by typing: !" + self.commands[Command.start]]
 
-        m[t.game][r.Game.join_none][r.noone]     = [""]
+        ### COMMAND MESSAGES ###
+        m[t.command][r.Command.unknown][r.noone]          = 
+            ["$target is an invalid command. Type !" + self.commands[Command.help] +
+             "for help"]
+        m[t.command][r.Command.game_not_running][r.noone] = 
+            ["$target can only be used while a game is running. Start one by " +
+             "typing !" + self.commands[Command.start]]
+
+        ### JOIN MESSAGES ###
+        m[t.join][r.Join.join][r.noone]     = [""]
+        m[t.join][r.Join.rejoin][r.noone]   = [""]
+        m[t.join][r.Join.leave][r.noone]    = [""]
+        m[t.join][r.Join.nick][r.noone]     = [""]
+        m[t.join][r.Join.ended][r.noone]    = [""]
+        m[t.join][r.Join.end][r.noone]      = [""]
+        m[t.join][r.Join.success][r.noone]  = [""]
+        m[t.join][r.Join.fail][r.noone]     = [""]
+        
+        ### ROLE MESSAGES ###
+        m[t.role][r.Role.announce][r.villager] = [""]
+        m[t.role][r.Role.announce][r.wolf]     = [""]
+        m[t.role][r.Role.announce][r.seer]     = [""]
+        m[t.role][r.Role.announce][r.guardian] = [""]
+        m[t.role][r.Role.announce][r.angel]    = [""]
+
+        m[t.role][r.Role.other][r.wolf]     = [""]
+
+        m[t.role][r.Role.other_p][r.villager] = [""]
+
+        m[t.role][r.Role.count][r.wolf]     = [""]
+        m[t.role][r.Role.count][r.seer]     = [""]
+        m[t.role][r.Role.count][r.guardian] = [""]
+        m[t.role][r.Role.count][r.angel]    = [""]
+
+        m[t.role][r.Role.count_p][r.wolf]     = [""]
+        m[t.role][r.Role.count_p][r.seer]     = [""]
+        m[t.role][r.Role.count_p][r.guardian] = [""]
+        m[t.role][r.Role.count_p][r.angel]    = [""]
+
+        ### NIGHT MESSAGES ###
+        m[t.night][r.Night.first][r.noone]     = [""]
+        m[t.night][r.Night.subsequent][r.noone]     = [""]
+        
+        m[t.night][r.Night.task][r.wolf]     = [""]
+        m[t.night][r.Night.task][r.seer]     = [""]
+        m[t.night][r.Night.task][r.guardian] = [""]
+
+        m[t.night][r.Night.task_p][r.wolf]     = [""]
+        m[t.night][r.Night.task_p][r.seer]     = [""]
+        m[t.night][r.Night.task_p][r.guardian] = [""]
+
+        ### KILL MESSAGES ###
+        m[t.kill][r.Kill.success][r.noone]              = [""]
+        m[t.kill][r.Kill.success_p][r.noone]            = [""]
+        m[t.kill][r.Kill.not_night][r.noone]            = [""]
+        m[t.kill][r.Kill.not_wolf][r.noone]             = [""]
+        m[t.kill][r.Kill.invalid_format][r.noone]       = [""]
+        m[t.kill][r.Kill.invalid_target][r.noone]       = [""]
+        m[t.kill][r.Kill.invalid_target_wolf][r.noone]  = [""]
+
+        ### SEE MESSAGES ###
+        m[t.see][r.See.success][r.noone]        = [""]
+        m[t.see][r.See.not_night][r.noone]      = [""]
+        m[t.see][r.See.not_seer][r.noone]       = [""]
+        m[t.see][r.See.invalid_format][r.noone] = [""]
+        m[t.see][r.See.invalid_target][r.noone] = [""]
+
+        m[t.see][r.See.result][r.villager]  = [""]
+        m[t.see][r.See.result][r.wolf]      = [""]
+        m[t.see][r.See.result][r.seer]      = [""]
+        m[t.see][r.See.result][r.guardian]  = [""]
+        m[t.see][r.See.result][r.angel]     = [""]
+
+        ### GUARD MESSAGES ###
+        m[t.guard][r.Guard.success][r.noone]        = [""]
+        m[t.guard][r.Guard.not_night][r.noone]      = [""]
+        m[t.guard][r.Guard.not_guardian][r.noone]   = [""]
+        m[t.guard][r.Guard.invalid_format][r.noone] = [""]
+        m[t.guard][r.Guard.invalid_target][r.noone] = [""]
+        
+        ### DAY MESSAGES ###
+        m[t.day][r.Day.start][r.noone]  = [""]
+
+        ### VOTE MESSAGES ###
+        m[t.vote][r.Vote.start][r.noone]            = [""]
+        m[t.vote][r.Vote.success][r.noone]          = [""]
+        m[t.vote][r.Vote.not_vote_time][r.noone]    = [""]
+        m[t.vote][r.Vote.invalid_format][r.noone]   = [""]
+        m[t.vote][r.Vote.invalid_target][r.noone]   = [""]
+        m[t.vote][r.Vote.end][r.noone]              = [""]
+        m[t.vote][r.Vote.tie][r.noone]              = [""]
+
+        ### DIE MESSAGES ###
+        m[t.die][r.Die.kill][r.villager]    = [""]
+        m[t.die][r.Die.kill][r.wolf]        = [""]
+        m[t.die][r.Die.kill][r.seer]        = [""]
+        m[t.die][r.Die.kill][r.guardian]    = [""]
+        
+        m[t.die][r.Die.vote][r.villager]    = [""]
+        m[t.die][r.Die.vote][r.wolf]        = [""]
+        m[t.die][r.Die.vote][r.seer]        = [""]
+        m[t.die][r.Die.vote][r.guardian]    = [""]
+        m[t.die][r.Die.vote][r.angel]       = [""]
+        
+        m[t.die][r.Die.not_voting][r.villager]  = [""]
+        m[t.die][r.Die.not_voting][r.wolf]      = [""]
+        m[t.die][r.Die.not_voting][r.seer]      = [""]
+        m[t.die][r.Die.not_voting][r.guardian]  = [""]
+        m[t.die][r.Die.not_voting][r.angel]     = [""]
+        
+        m[t.die][r.Die.nick][r.villager]    = [""]
+        m[t.die][r.Die.nick][r.wolf]        = [""]
+        m[t.die][r.Die.nick][r.seer]        = [""]
+        m[t.die][r.Die.nick][r.guardian]    = [""]
+        m[t.die][r.Die.nick][r.angel]       = [""]
+        
+        m[t.die][r.Die.leave][r.villager]   = [""]
+        m[t.die][r.Die.leave][r.wolf]       = [""]
+        m[t.die][r.Die.leave][r.seer]       = [""]
+        m[t.die][r.Die.leave][r.guardian]   = [""]
+        m[t.die][r.Die.leave][r.angel]      = [""]
+        
+        ### WIN MESSAGES ###
+        m[t.win][r.Win.wolf][r.noone]       = [""]
+        m[t.win][r.Win.wolf_p][r.noone]     = [""]
+        m[t.win][r.Win.villager][r.noone]   = [""]
+        m[t.win][r.Win.villager_p][r.noone] = [""]
+        m[t.win][r.Win.draw][r.noone]       = [""]
+        
+        m[t.win][r.Win.list_role][r.villager]   = [""]
+        m[t.win][r.Win.list_role][r.wolf]       = [""]
+        m[t.win][r.Win.list_role][r.seer]       = [""]
+        m[t.win][r.Win.list_role][r.guardian]   = [""]
+        m[t.win][r.Win.list_role][r.angel]      = [""]
+        m[t.win][r.Win.list_role][r.traitor]    = [""]
+
+        m[t.win][r.Win.list_role_p][r.villager]   = [""]
+        m[t.win][r.Win.list_role_p][r.wolf]       = [""]
+        m[t.win][r.Win.list_role_p][r.seer]       = [""]
+        m[t.win][r.Win.list_role_p][r.guardian]   = [""]
+        m[t.win][r.Win.list_role_p][r.angel]      = [""]
+        m[t.win][r.Win.list_role_p][r.traitor]    = [""]
+
+        ### MISC MESSAGES ###
+        m[t.misc][r.Misc.help][r.noone]         = [""]
+        m[t.misc][r.Misc.randplayer][r.noone]   = [""]
+        m[t.misc][r.Misc.not_player][r.noone]   = [""]
+        m[t.misc][r.Misc.dead][r.noone]         = [""]
+
