@@ -67,18 +67,18 @@ class WerewolfBot(SingleServerIRCBot):
     def on_join(self, c, e):
         nick = nm_to_n(e.source())
         self.send_message("%s has joined the channel" % nick)
-        if self.game: self.game.on_channel_join(nick)
+        if self.game is not None: self.game.on_channel_join(nick)
 
     def on_part(self, c, e):
         nick = nm_to_n(e.source())
         self.send_message("%s has left the channel" % nick)
-        if self.game: self.game.on_player_channel_leave(nick)
+        if self.game is not None: self.game.on_player_channel_leave(nick)
 
     def on_nick(self, c, e):
         target  = e.target()
         nick    = nm_to_n(e.source())
         self.send_message("%s has changed their nick to %s" % (nick, target))
-        if self.game: self.game.on_player_nick_change(nick, target)
+        if self.game is not None: self.game.on_player_nick_change(nick, target)
 
     def on_quit(self, c, e):
         self.on_part(c, e)
@@ -115,7 +115,7 @@ class WerewolfBot(SingleServerIRCBot):
         self.set_modes("%sm" % ('+' if moderated else '-'))
 
     def voice_users(self, targets):
-        for start in range(0, len(targets), 12):
+        for start in xrange(0, len(targets), 12):
             end = start+12
             if len(targets) < end: end = len(targets)
             nicks = ""
@@ -124,7 +124,7 @@ class WerewolfBot(SingleServerIRCBot):
             self.set_modes(modes)
 
     def devoice_users(self, targets, unmoderate=False):
-        for start in range(0, len(targets), 12):
+        for start in xrange(0, len(targets), 12):
             end = start+12
             if len(targets) < end: end = len(targets)
             nicks = ""
@@ -135,13 +135,13 @@ class WerewolfBot(SingleServerIRCBot):
 
     ### Game Management Methods ###
     def start_game(self, who, args):
-        if not self.game:
+        if self.game is None:
             self.game = Game(self, who)
         else:
             self.game.restart(who, args)
 
     def end_game(self):
-        if self.game:
+        if self.game is not None:
             self.game.end()
 
     def remove_game(self):
@@ -151,6 +151,7 @@ class WerewolfBot(SingleServerIRCBot):
     def is_admin(self, nick):
         if nick.lower() in config.irc.admins: return True
         return False
+
     def process_forever(self):
         self._connect()
         while 1:
