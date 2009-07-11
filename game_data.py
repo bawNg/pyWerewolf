@@ -14,7 +14,7 @@ class Consts:
     min_players         = 3     #number of players needed before a game can start
 
 class Commands:
-    game = ["join", "vote", "kill", "guard", "see", "randplayer"]
+    game = ["join", "vote", "kill", "guard", "see", "randplayer", "leave"]
 
 class Mode:
     join        = 0

@@ -30,6 +30,7 @@ class Game(object):
     def _rem_player(self, who):
         if who.lower() in self.players:
             #TODO: unvoice player
+            self.irc.devoice_users([who])
             del self.players[who.lower()]
 
     def _check_win(self):
@@ -130,10 +131,21 @@ class Game(object):
             if role == self.players[player].role.role:
                 ans += 1
         return ans
+
+    #returns all players of that role
+    def _role(self, role):
+        ans = []
+        for player in self.players:
+            if role == self.players[player].role.role:
+                ans.append(self.players[player])
+        return ans
     
     def _reset_players(self):
         for player in self.players:
             self.players[player].reset()
+
+    def _get_vote_tally(self):
+        pass
             
     def _start(self, who):
         #register callbacks
@@ -175,18 +187,20 @@ class Game(object):
             self.night_start()
         else:
             self.theme.reset()
+            self._chan_message(self.theme.join_end_message)
             self._chan_message(self.theme.join_fail_message)
             self.irc.end_game()
 
     def night_start(self):
-        self.theme.reset()
         time = 0
         if self._num(Role.wolf) == 1:
             time = Consts.night_wolf_time
         else:
             time = Consts.night_wolves_time
     
+        self.theme.reset()
         self.theme.num = time
+        self._reset_players()
         self.mode = Mode.night
         for role in [Role.wolf, Role.seer, Role.guardian]:
             if self._is_alive(role):
@@ -197,7 +211,65 @@ class Game(object):
         self.timers.add_timer(time, self.night_end)
 
     def night_end(self):
-        #TODO: output results of night
+        #find wolf target
+        wolf_targets = {}
+        max_votes = 0
+        for player in self._role(Role.wolf):
+            if player.kill:
+                kill = player.kill.lower()
+                if kill not in wolf_target:
+                    wolf_target[kill] = 0
+                wolf_target[kill] += 1
+                max_votes = max(max_votes, wolf_target[kill])
+        temp_wolf_targets = []
+        for t in wolf_target:
+            if wolf_target[t] == max_votes:
+                temp_wolf_targets.append(t)
+        wolf_target = None
+        if len(temp_wolf_targets) > 0:
+            ran_target = random.randint(0, len(temp_wolf_targets)-1)
+            wolf_target = temp_wolf_targets[ran_target]
+
+        #guardians protection
+        wolf_guardians = []
+        for player in self._role(Role.guardian):
+            guard = player.guard.lower()
+            if self.players[guard].role.role == Role.wolf:
+                wolf_guardians.append(player.nick.lower())
+
+        if wolf_guardians:
+            wolf_target = wolf_guardians[random.randint(0, len(wolf_guardians)-1)]
+        else:
+            for player in self._role(Role.guardian):
+                guard = player.guard.lower()
+                if guard == wolf_target:
+                    wolf_target = None
+                    break
+
+        #seer results
+        for player in self._role(Role.seer):
+            if player.see:
+                if player.see.lower() in self.players:
+                    self.theme.reset()
+                    self.theme.target = player.see
+                    role = self.players[player.see.lower()].role.appears_as
+                    self._notice(player.name, self.theme.see_message[role])
+                else: 
+                    pass #player left, do nothing
+
+        #kill wolf target
+        if wolf_target:
+            role = self.players[wolf_target].role.role
+            nick = self.players[wolf_target].nick
+            self.theme.reset()
+            self.theme.target = nick
+            self._chan_message(self.theme.kill_die_message[role])
+            self._rem_player(wolf_target)
+        else:
+            self.theme.reset()
+            self._chan_message(self.theme.kill_die_message[Role.noone])
+        
+        #if the game hasn't been won start the next day
         if not self._check_win():
             self.day_start()
 
@@ -210,6 +282,8 @@ class Game(object):
         self.timers.add_timer(Consts.talk_time, self.vote_start)
 
     def vote_start(self):
+        self._reset_players()
+        self.mode = Mode.day_vote
         self.theme.reset()
         self.theme.num = Consts.vote_time
         self._chan_message(self.theme.vote_start_message)
@@ -266,6 +340,7 @@ class Game(object):
                 if self.mode == Mode.day_vote:
                     target = args[0]
                     if target.lower() in self.players:
+                        
                         #TODO update vote nd output
                         pass
                     else:
@@ -358,8 +433,10 @@ class Game(object):
                 role = self.players[old.lower()].role.role
                 self._chan_message(self.theme.leave_kill_message[role])
                 self._rem_player(old)
+                self.irc.devoice_users([new])
                 self._check_win()
             else:
                 self._chan_message(self.theme.join_leave_nick_message)
                 self._rem_player(old)
+                self.irc.devoice_users([new])
 
