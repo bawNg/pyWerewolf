@@ -17,6 +17,9 @@ class Game_Events(Events):
                   'on_player_vote',
                   'on_player_kill', 'on_player_guard', 'on_player_see')
 
+#TODO: maybe make events more general and then use parameters to specify:
+#   eg. on_player_death(Type.lynch, ...)
+#   and on_player_death(Type.kill, ...)
 class Game(object):
     def __init__(self, bot, who):
         self.events = Game_Events()
