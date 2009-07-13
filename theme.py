@@ -262,21 +262,23 @@ class WerewolfTheme(Theme):
 
         ### JOIN MESSAGES ###
         m[t.join][t.Join.join][r.noone] = \
-            [[(d.public,    "$num. $user joined the hunt!")]]
+            [[(d.public,    "$num. $user has joined the mob!")]]
         m[t.join][t.Join.rejoin][r.noone] = \
             [[(d.private,   "You have already joined the hunt.")]]
         m[t.join][t.Join.leave][r.noone] = \
-            [[(d.public,    "$target has left the hunt.")]]
+            [[(d.public,    "$target has left the mob.")]]
         m[t.join][t.Join.nick][r.noone] = \
-            [[(d.public,    "$target has left the hunt.")]]
+            [[(d.public,    "$target has left the mob.")]]
         m[t.join][t.Join.ended][r.noone] = \
             [[(d.private,   "Sorry the joining has ended.")]]
         m[t.join][t.Join.end][r.noone] = \
             [[(d.public,    "Joining ends.")]]
         m[t.join][t.Join.success][r.noone] = \
-            [[(d.public,    "Congratulations, you have $num players in the hunt!")]]
+            [[(d.public,    "Congratulations! You have managed to scare $num "+
+                            "villagers enough to get them out there hunting.")]]
         m[t.join][t.Join.fail][r.noone] = \
-            [[(d.public,    "Sorry not enough players have joined.")]]
+            [[(d.public,    "Sorry, not enough members to form a valid mob. "+
+                            "Try again later.")]]
         
         ### ROLE MESSAGES ###
         m[t.role][t.Role.announce][r.villager] = \
