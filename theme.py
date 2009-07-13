@@ -2,7 +2,6 @@
 
 from player import Role
 from command_handler import Command
-from output_handler import MessageType
 import random
 
 class ThemeMessageType:
@@ -136,6 +135,11 @@ class ThemeMessageType:
              (night, Night), (kill, Kill), (see, See), (guard, Guard), 
              (day, Day), (vote, Vote), (die, Die), (win, Win), (misc, Misc)]
 
+class ThemeMessageDest: #the destination of a message
+    public      = 0 #everyone sees this message
+    announce    = 1 #an announcement to everyone
+    private     = 2 #only the user sees this message
+
 class Theme:
     def __init__(self):
         #custom command names
@@ -223,467 +227,474 @@ class WerewolfTheme(Theme):
         m   = self.messages     #alias for messages
         t   = ThemeMessageType  #alias for ThemeMessageType
         r   = Role              #alias for Role
-        mt  = MessageType       #alias for MessageType
+        d   = ThemeMessageDest  #alias for ThemeMessageDest
 
         ### GAME MESSAGES ###
         m[t.game][t.Game.start][r.noone] = \
-            [[(mt.chan, "$user started a new game! You have $num seconds to join!")]]
+            [[(d.public,    "$user started a new game! You have $num "+
+                            "seconds to join!")]]
         m[t.game][t.Game.started][r.noone] = \
-            [[(mt.notice_p, "A game already running. Join it if you still can!")]]
+            [[(d.private,   "A game already running. Join it if you still can!")]]
         m[t.game][t.Game.join_starting][r.noone] = \
-            [[(mt.notice_p, "A game is starting. Type " + 
+            [[(d.private,   "A game is starting. Type " + 
                             self.commands[Command.join] + " to join it.")]]
         m[t.game][t.Game.join_running][r.noone] = \
-            [[(mt.notice_p, "A game is already running. It should finish soon, "+
+            [[(d.private,   "A game is already running. It should finish soon, "+
                             "then you can join the fun. :)")]]
         m[t.game][t.Game.join_none][r.noone] = \
-            [[(mt.notice_p, "No game is running. Start one by typing: !" + 
+            [[(d.private,   "No game is running. Start one by typing: !" + 
                             self.commands[Command.start])]]
 
         ### COMMAND MESSAGES ###
         m[t.command][t.Command.unknown][r.noone] = \
-            [[(mt.notice_p, "$target is an invalid command. Type !" + 
+            [[(d.private,   "$target is an invalid command. Type !" + 
                             self.commands[Command.help] + " for help")]]
         m[t.command][t.Command.game_not_running][r.noone] = \
-            [[(mt.notice_p, "$target can only be used while a game is running. "+
+            [[(d.private,   "$target can only be used while a game is running. "+
                             "Start one by typing !" + self.commands[Command.start])]]
 
         ### JOIN MESSAGES ###
         m[t.join][t.Join.join][r.noone] = \
-            [[(mt.chan, "$num. $user joined the hunt!")]]
+            [[(d.public,    "$num. $user joined the hunt!")]]
         m[t.join][t.Join.rejoin][r.noone] = \
-            [[(mt.notice_p, "You have already joined the hunt.")]]
+            [[(d.private,   "You have already joined the hunt.")]]
         m[t.join][t.Join.leave][r.noone] = \
-            [[(mt.chan, "$target has left the hunt.")]]
+            [[(d.public,    "$target has left the hunt.")]]
         m[t.join][t.Join.nick][r.noone] = \
-            [[(mt.chan, "$target has left the hunt.")]]
+            [[(d.public,    "$target has left the hunt.")]]
         m[t.join][t.Join.ended][r.noone] = \
-            [[(mt.notice_p, "Sorry the joining has ended.")]]
+            [[(d.private,   "Sorry the joining has ended.")]]
         m[t.join][t.Join.end][r.noone] = \
-            [[(mt.chan, "Joining ends.")]]
+            [[(d.public,    "Joining ends.")]]
         m[t.join][t.Join.success][r.noone] = \
-            [[(mt.chan, "Congratulations, you have $num players in the hunt!")]]
+            [[(d.public,    "Congratulations, you have $num players in the hunt!")]]
         m[t.join][t.Join.fail][r.noone] = \
-            [[(mt.chan, "Sorry not enough players have joined.")]]
+            [[(d.public,    "Sorry not enough players have joined.")]]
         
         ### ROLE MESSAGES ###
         m[t.role][t.Role.announce][r.villager] = \
-            [[(mt.notice_p, "You are a villager.")]]
+            [[(d.private,   "You are a villager.")]]
         m[t.role][t.Role.announce][r.wolf] = \
-            [[(mt.notice_p, "You are a werewolf. rAwr!!!")]]
+            [[(d.private,   "You are a werewolf. rAwr!!!")]]
         m[t.role][t.Role.announce][r.seer] = \
-            [[(mt.notice_p, "You are a seer.")]]
+            [[(d.private,   "You are a seer.")]]
         m[t.role][t.Role.announce][r.guardian] = \
-            [[(mt.notice_p, "You are a guardian.")]]
+            [[(d.private,   "You are a guardian.")]]
         m[t.role][t.Role.announce][r.angel] = \
-            [[(mt.notice_p, "You are an angel.")]]
+            [[(d.private,   "You are an angel.")]]
 
         m[t.role][t.Role.other][r.wolf] = \
-            [[(mt.notice_p, "Your brethren is $wolves.")]]
+            [[(d.private,   "Your brethren is $wolves.")]]
         m[t.role][t.Role.other_p][r.wolf] = \
-            [[(mt.notice_p, "Your brethren are: $wolves")]]
+            [[(d.private,   "Your brethren are: $wolves")]]
 
         m[t.role][t.Role.count][r.villager] = \
-            [[(mt.chan, "There is $num villager.")]]
+            [[(d.public,    "There is $num villager.")]]
         m[t.role][t.Role.count][r.wolf] = \
-            [[(mt.chan, "There is $num werewolf.")]]
+            [[(d.public,    "There is $num werewolf.")]]
         m[t.role][t.Role.count][r.seer] = \
-            [[(mt.chan, "There is $num seer.")]]
+            [[(d.public,    "There is $num seer.")]]
         m[t.role][t.Role.count][r.guardian] = \
-            [[(mt.chan, "There is $num guardian.")]]
+            [[(d.public,    "There is $num guardian.")]]
         m[t.role][t.Role.count][r.angel] = \
-            [[(mt.chan, "There is $num angel.")]]
+            [[(d.public,    "There is $num angel.")]]
         m[t.role][t.Role.count][r.traitor] = \
-            [[(mt.chan, "There is $num traitor.")]]
+            [[(d.public,    "There is $num traitor.")]]
 
         m[t.role][t.Role.count_p][r.villager] = \
-            [[(mt.chan, "There are $num villagers.")]]
+            [[(d.public,    "There are $num villagers.")]]
         m[t.role][t.Role.count_p][r.wolf] = \
-            [[(mt.chan, "There are $num werewolves.")]]
+            [[(d.public,    "There are $num werewolves.")]]
         m[t.role][t.Role.count_p][r.seer] = \
-            [[(mt.chan, "There are $num seers.")]]
+            [[(d.public,    "There are $num seers.")]]
         m[t.role][t.Role.count_p][r.guardian] = \
-            [[(mt.chan, "There are $num guardians.")]]
+            [[(d.public,    "There are $num guardians.")]]
         m[t.role][t.Role.count_p][r.angel] = \
-            [[(mt.chan, "There are $num angels.")]]
+            [[(d.public,    "There are $num angels.")]]
         m[t.role][t.Role.count_p][r.traitor] = \
-            [[(mt.chan, "There are $num traitors.")]]
+            [[(d.public,    "There are $num traitors.")]]
 
         ### NIGHT MESSAGES ###
         m[t.night][t.Night.first][r.noone] = \
-            [[(mt.chan, "Night descends over the unsuspecting village.")]]
+            [[(d.public,    "Night descends over the unsuspecting village.")]]
         m[t.night][t.Night.subsequent][r.noone] = \
-            [[(mt.chan, "Villagers goes to an uneasy sleep.")]]
+            [[(d.public,    "Villagers goes to an uneasy sleep.")]]
         
         m[t.night][t.Night.task][r.wolf] = \
-            [[(mt.chan, "Werewolf type: /msg $bot " + self.commands[Command.kill] + 
-                        " <target> to kill. You have $num seconds.")]]
+            [[(d.public,    "Werewolf type: /msg $bot " + 
+                            self.commands[Command.kill] + 
+                            " <target> to kill. You have $num seconds.")]]
         m[t.night][t.Night.task][r.seer] = \
-            [[(mt.chan, "Seer type: /msg $bot " + self.commands[Command.see] + 
-                        " <target> to see. You have $num seconds.")]]
+            [[(d.public,    "Seer type: /msg $bot " + 
+                            self.commands[Command.see] + 
+                            " <target> to see. You have $num seconds.")]]
         m[t.night][t.Night.task][r.guardian] = \
-            [[(mt.chan, "Guardian type: /msg $bot " + self.commands[Command.guard] + 
-                        " <target> to guard. You have $num seconds.")]]
+            [[(d.public,    "Guardian type: /msg $bot " + 
+                            self.commands[Command.guard] + 
+                            " <target> to guard. You have $num seconds.")]]
 
         m[t.night][t.Night.task_p][r.wolf] = \
-            [[(mt.chan, "Werewolves type: /msg $bot " + self.commands[Command.kill] + 
-                        " <target> to kill. You have $num seconds.")]]
+            [[(d.public,    "Werewolves type: /msg $bot " + 
+                            self.commands[Command.kill] + 
+                            " <target> to kill. You have $num seconds.")]]
         m[t.night][t.Night.task_p][r.seer] = \
-            [[(mt.chan, "Seers type: /msg $bot " + self.commands[Command.see] + 
-                        " <target> to see. You have $num seconds.")]]
+            [[(d.public,    "Seers type: /msg $bot " + 
+                            self.commands[Command.see] + 
+                            " <target> to see. You have $num seconds.")]]
         m[t.night][t.Night.task_p][r.guardian] = \
-            [[(mt.chan, "Guardians type: /msg $bot " + self.commands[Command.guard] + 
-                        " <target> to guard. You have $num seconds.")]]
+            [[(d.public,    "Guardians type: /msg $bot " + 
+                            self.commands[Command.guard] + 
+                            " <target> to guard. You have $num seconds.")]]
 
         ### KILL MESSAGES ###
         m[t.kill][t.Kill.success][r.noone] = \
-            [[(mt.notice_p, "You have selected $target for your feast.")]]
+            [[(d.private,   "You have selected $target for your feast.")]]
         m[t.kill][t.Kill.success_p][r.noone] = \
-            [[(mt.notice_p, "You have selected $target for your feast, but must "+
+            [[(d.private,   "You have selected $target for your feast, but must "+
                             "wait for brethren to vote.")]]
         m[t.kill][t.Kill.not_night][r.noone] = \
-            [[(mt.notice_p, "You can only kill at night.")]]
+            [[(d.private,   "You can only kill at night.")]]
         m[t.kill][t.Kill.not_wolf][r.noone] = \
-            [[(mt.notice_p, "You aren't a werewolf. Only werewolves can kill.")]]
+            [[(d.private,   "You aren't a werewolf. Only werewolves can kill.")]]
         m[t.kill][t.Kill.invalid_format][r.noone] = \
-            [[(mt.notice_p, "Your " + self.commands[Command.kill] + 
+            [[(d.private,   "Your " + self.commands[Command.kill] + 
                             " command was invalidly formated.")]]
         m[t.kill][t.Kill.invalid_target][r.noone] = \
-            [[(mt.notice_p, "$target isn't a player in the game.")]]
+            [[(d.private,   "$target isn't a player in the game.")]]
         m[t.kill][t.Kill.invalid_target_wolf][r.noone] = \
-            [[(mt.notice_p, "$target is one of your brethren you can't "+
+            [[(d.private,   "$target is one of your brethren you can't "+
                             "attack them.")]]
         m[t.kill][t.Kill.invalid_target_dead][r.noone] = \
-            [[(mt.notice_p, "$target is dead. You can't kill them twice.")]]
+            [[(d.private,   "$target is dead. You can't kill them twice.")]]
 
         ### SEE MESSAGES ###
         m[t.see][t.See.success][r.noone] = \
-            [[(mt.notice_p, "Your predictions will be revealed to you at dawn.")]]
+            [[(d.private,   "Your predictions will be revealed to you at dawn.")]]
         m[t.see][t.See.not_night][r.noone] = \
-            [[(mt.notice_p, "You can only see at night.")]]
+            [[(d.private,   "You can only see at night.")]]
         m[t.see][t.See.not_seer][r.noone] = \
-            [[(mt.notice_p, "You aren't a seer.")]]
+            [[(d.private,   "You aren't a seer.")]]
         m[t.see][t.See.invalid_format][r.noone] = \
-            [[(mt.notice_p, "Your " + self.commands[Command.kill] + 
+            [[(d.private,   "Your " + self.commands[Command.kill] + 
                             " command was invalidly formated.")]]
         m[t.see][t.See.invalid_target][r.noone] = \
-            [[(mt.notice_p, "$target isn't a player in the game.")]]
+            [[(d.private,   "$target isn't a player in the game.")]]
         m[t.see][t.See.invalid_target_dead][r.noone] = \
-            [[(mt.notice_p, "$target is dead. You don't need to see their "+
+            [[(d.private,   "$target is dead. You don't need to see their "+
                             " true intentions.")]]
 
         m[t.see][t.See.result][r.villager] = \
-            [[(mt.notice_p, "$target is a villager.")]]
+            [[(d.private,   "$target is a villager.")]]
         m[t.see][t.See.result][r.wolf] = \
-            [[(mt.notice_p, "$target is a filthy werewolf.")]]
+            [[(d.private,   "$target is a filthy werewolf.")]]
         m[t.see][t.See.result][r.seer] = \
-            [[(mt.notice_p, "$target is a seer.")]]
+            [[(d.private,   "$target is a seer.")]]
         m[t.see][t.See.result][r.guardian] = \
-            [[(mt.notice_p, "$target is a guardian.")]]
+            [[(d.private,   "$target is a guardian.")]]
         m[t.see][t.See.result][r.angel] = \
-            [[(mt.notice_p, "$target is an angel.")]]
+            [[(d.private,   "$target is an angel.")]]
 
         ### GUARD MESSAGES ###
         m[t.guard][t.Guard.success][r.noone] = \
-            [[(mt.notice_p, "You have chosen to guard $target from werewolf "+
+            [[(d.private,   "You have chosen to guard $target from werewolf "+
                             "attacks.")]]
         m[t.guard][t.Guard.not_night][r.noone] = \
-            [[(mt.notice_p, "You can only guard at night.")]]
+            [[(d.private,   "You can only guard at night.")]]
         m[t.guard][t.Guard.not_guardian][r.noone] = \
-            [[(mt.notice_p, "You aren't a guardian.")]]
+            [[(d.private,   "You aren't a guardian.")]]
         m[t.guard][t.Guard.invalid_format][r.noone] = \
-            [[(mt.notice_p, "Your " + self.commands[Command.guard] + 
+            [[(d.private,   "Your " + self.commands[Command.guard] + 
                             " command was invalidly formated.")]]
         m[t.guard][t.Guard.invalid_target][r.noone] = \
-            [[(mt.notice_p, "$target isn't a player in the game.")]]
+            [[(d.private,   "$target isn't a player in the game.")]]
         m[t.guard][t.Guard.invalid_target_dead][r.noone] = \
-            [[(mt.notice_p, "$target is dead. The dead don't need protection.")]]
+            [[(d.private,   "$target is dead. The dead don't need protection.")]]
         
         ### DAY MESSAGES ###
         m[t.day][t.Day.start][r.noone] = \
-            [[(mt.chan, "The villagers gather. You have $num seconds to "+
-                        "make your accusations.")]]
+            [[(d.public,    "The villagers gather. You have $num seconds to "+
+                            "make your accusations.")]]
 
         ### VOTE MESSAGES ###
         m[t.vote][t.Vote.start][r.noone] = \
-            [[(mt.chan, "Voting has started. Type: !"+ 
-                        self.commands[Command.vote] + " <target> to vote for"+
-                        "<target>. You have $num seconds to vote.")]]
+            [[(d.public,    "Voting has started. Type: !"+ 
+                            self.commands[Command.vote] + " <target> to vote for"+
+                            "<target>. You have $num seconds to vote.")]]
         m[t.vote][t.Vote.success][r.noone] = \
-            [[(mt.chan, "$user voted for $target. ($votes)")]]
+            [[(d.public,    "$user voted for $target. ($votes)")]]
         m[t.vote][t.Vote.not_vote_time][r.noone] = \
-            [[(mt.notice_p, "Sorry you can only vote during voting time.")]]
+            [[(d.private,   "Sorry you can only vote during voting time.")]]
         m[t.vote][t.Vote.invalid_format][r.noone] = \
-            [[(mt.notice_p, "Your " + self.commands[Command.vote] + 
+            [[(d.private,   "Your " + self.commands[Command.vote] + 
                             " command was invalidly formated.")]]
         m[t.vote][t.Vote.invalid_target][r.noone] = \
-            [[(mt.notice_p, "$target isn't a player in the game.")]]
+            [[(d.private,   "$target isn't a player in the game.")]]
         m[t.vote][t.Vote.invalid_target_dead][r.noone] = \
-            [[(mt.notice_p, "$target is dead. You can't lynch the dead.")]]
+            [[(d.private,   "$target is dead. You can't lynch the dead.")]]
         m[t.vote][t.Vote.end][r.noone] = \
-            [[(mt.chan, "Voting has ended. Tallying votes...")]]
+            [[(d.public,    "Voting has ended. Tallying votes...")]]
         m[t.vote][t.Vote.tie][r.noone] = \
-            [[(mt.chan, "There was a tie, randomly choosing target.")]]
+            [[(d.public,    "There was a tie, randomly choosing target.")]]
 
         ### DIE MESSAGES ###
         m[t.die][t.Die.kill][r.villager] = \
-            [[(mt.chan, "The villagers gather the next morning "+
-                        "in the village center, but $target "+
-                        "does not appear. The villagers "+
-                        "converge on $target's home and find "+
-                        "them decapitated in their bed. After "+
-                        "carrying the body to the church, the "+
-                        "villagers, now hysterical, return to "+
-                        "the village center to decide how to "+
-                        "retaliate..."),
-              (mt.chan, "$target the villager was killed.")],
+            [[(d.public,    "The villagers gather the next morning "+
+                            "in the village center, but $target "+
+                            "does not appear. The villagers "+
+                            "converge on $target's home and find "+
+                            "them decapitated in their bed. After "+
+                            "carrying the body to the church, the "+
+                            "villagers, now hysterical, return to "+
+                            "the village center to decide how to "+
+                            "retaliate..."),
+              (d.public,    "$target the villager was killed.")],
 
-             [(mt.chan, "As some villagers begin to gather in "+
-                        "the village center, a scream is "+
-                        "heard from the direction of $target's "+
-                        "house. The elderly villager who had "+
-                        "screamed points to the fence, on top "+
-                        "of which, the remains of $target are "+
-                        "impaled, with their intestines "+
-                        "spilling onto the cobbles. "+
-                        "Apparently $target was trying to flee "+
-                        "their attacker..."),
-              (mt.chan, "$target the villager was killed.")],
+             [(d.public,    "As some villagers begin to gather in "+
+                            "the village center, a scream is "+
+                            "heard from the direction of $target's "+
+                            "house. The elderly villager who had "+
+                            "screamed points to the fence, on top "+
+                            "of which, the remains of $target are "+
+                            "impaled, with their intestines "+
+                            "spilling onto the cobbles. "+
+                            "Apparently $target was trying to flee "+
+                            "their attacker..."),
+              (d.public,    "$target the villager was killed.")],
 
-             [(mt.chan, "When the villagers gather at the "+
-                        "village center, one comes running from "+
-                        "the hanging tree, screaming at others "+
-                        "to follow. When they arrive at the "+
-                        "hanging tree, a gentle creaking echoes "+
-                        "through the air as the body of $target "+
-                        "swings gently in the breeze, its arms "+
-                        "ripped off at the shoulders. It appears "+
-                        "the attacker was not without a sense of "+
-                        "irony..."),
-              (mt.chan, "$target the villager was killed.")],
+             [(d.public,    "When the villagers gather at the "+
+                            "village center, one comes running from "+
+                            "the hanging tree, screaming at others "+
+                            "to follow. When they arrive at the "+
+                            "hanging tree, a gentle creaking echoes "+
+                            "through the air as the body of $target "+
+                            "swings gently in the breeze, its arms "+
+                            "ripped off at the shoulders. It appears "+
+                            "the attacker was not without a sense of "+
+                            "irony..."),
+              (d.public,    "$target the villager was killed.")],
 
-             [(mt.chan, "As the village priest gathers the "+
-                        "prayer books for the morning's sermon, "+
-                        "he notices a trickle of blood snaking "+
-                        "down the aisle. He looks upward "+
-                        "to see $target impaled on the crucifix "+
-                        "- the corpse has been gutted. He "+
-                        "shouts for help, and the other "+
-                        "villagers pile into the church and "+
-                        "start arguing furiously..."),
-              (mt.chan, "$target the villager was killed.")]]
+             [(d.public,    "As the village priest gathers the "+
+                            "prayer books for the morning's sermon, "+
+                            "he notices a trickle of blood snaking "+
+                            "down the aisle. He looks upward "+
+                            "to see $target impaled on the crucifix "+
+                            "- the corpse has been gutted. He "+
+                            "shouts for help, and the other "+
+                            "villagers pile into the church and "+
+                            "start arguing furiously..."),
+              (d.public,    "$target the villager was killed.")]]
         m[t.die][t.Die.kill][r.seer] = \
-            [[(mt.chan, "The first villager to arrive at the "+
-                        "center shrieks in horror - lying on the "+
-                        "cobbles is a blood stained Ouija Board, "+
-                        "and atop it sits $target's head. It "+
-                        "appears $target the Seer had been seeking "+
-                        "the guidance of the spirits to root out "+
-                        "the wolves, but apparently the magic "+
-                        "eight ball didn't see THIS one coming..."),
-              (mt.chan, "$target the seer was killed.")]]
+            [[(d.public,    "The first villager to arrive at the "+
+                            "center shrieks in horror - lying on the "+
+                            "cobbles is a blood stained Ouija Board, "+
+                            "and atop it sits $target's head. It "+
+                            "appears $target the Seer had been seeking "+
+                            "the guidance of the spirits to root out "+
+                            "the wolves, but apparently the magic "+
+                            "eight ball didn't see THIS one coming..."),
+              (d.public,    "$target the seer was killed.")]]
         m[t.die][t.Die.kill][r.guardian] = \
-            [[(mt.chan, "As one of the villagers passes "+
-                        "$target's home, he sees a bloody "+
-                        "mess in front of the door. After "+
-                        "following the trail of blood and gore, "+
-                        "he finds $target's body torn to pieces "+
-                        "with herbs and powder flung all about. "+
-                        "It's too bad $target the Guardian was "+
-                        "unable to ward off these evil beings..."),
-              (mt.chan, "$target the guardian was killed.")]]
+            [[(d.public,    "As one of the villagers passes "+
+                            "$target's home, he sees a bloody "+
+                            "mess in front of the door. After "+
+                            "following the trail of blood and gore, "+
+                            "he finds $target's body torn to pieces "+
+                            "with herbs and powder flung all about. "+
+                            "It's too bad $target the Guardian was "+
+                            "unable to ward off these evil beings..."),
+              (d.public,    "$target the guardian was killed.")]]
         m[t.die][t.Die.kill][r.noone] = \
-            [[(mt.chan, "The villagers gather the next morning in "+
-                        "the village center, to sighs of relief - "+
-                        "it appears there was no attack the "+
-                        "previous night.")]]
+            [[(d.public,    "The villagers gather the next morning in "+
+                            "the village center, to sighs of relief - "+
+                            "it appears there was no attack the "+
+                            "previous night.")]]
         
         m[t.die][t.Die.vote][r.villager] = \
-            [[(mt.chan, "The air thick with adrenaline, the "+
-                        "villagers grab $target who struggles "+
-                        "furiously, pleading innocence, but "+
-                        "the screams fall on deaf ears. "+
-                        "$target is dragged to the stake at "+
-                        "the edge of the village, and burned "+
-                        "alive. But the villagers shouts and "+
-                        "cheers fade as they realise the moon "+
-                        "is already up - $target was not a "+
-                        "werewolf after all..."),
-              (mt.chan, "$target the villager was killed.")],
+            [[(d.public,    "The air thick with adrenaline, the "+
+                            "villagers grab $target who struggles "+
+                            "furiously, pleading innocence, but "+
+                            "the screams fall on deaf ears. "+
+                            "$target is dragged to the stake at "+
+                            "the edge of the village, and burned "+
+                            "alive. But the villagers shouts and "+
+                            "cheers fade as they realise the moon "+
+                            "is already up - $target was not a "+
+                            "werewolf after all..."),
+              (d.public,    "$target the villager was killed.")],
 
-             [(mt.chan, "Realising the angry mob is turning, "+
-                        "$target tries to run, but is quickly "+
-                        "seized upon. $target is strung up to "+
-                        "the hanging tree, and a hunter readies "+
-                        "his rifle with a silver slug, as the "+
-                        "block is kicked from beneath them. "+
-                        "But there is a dull snap, and $target "+
-                        "hangs, silent, motionless. The silent "+
-                        "villagers quickly realise their grave "+
-                        "mistake..."),
-              (mt.chan, "$target the villager was killed.")]]
+             [(d.public,    "Realising the angry mob is turning, "+
+                            "$target tries to run, but is quickly "+
+                            "seized upon. $target is strung up to "+
+                            "the hanging tree, and a hunter readies "+
+                            "his rifle with a silver slug, as the "+
+                            "block is kicked from beneath them. "+
+                            "But there is a dull snap, and $target "+
+                            "hangs, silent, motionless. The silent "+
+                            "villagers quickly realise their grave "+
+                            "mistake..."),
+              (d.public,    "$target the villager was killed.")]]
         m[t.die][t.Die.vote][r.wolf] = \
-            [[(mt.chan, "After coming to a decision, $target is "+
-                        "quickly dragged from the crowd and "+
-                        "dragged to the hanging tree. $target is "+
-                        "strung up, and the block kicked from "+
-                        "beneath their feet. There is a yelp of "+
-                        "pain, but $target's neck doesn't snap, "+
-                        "and fur begins to sprout from his/her "+
-                        "body. A gunshot rings out, as a "+
-                        "villager puts a silver bullet in the "+
-                        "beast's head..."),
-              (mt.chan, "$target the werewolf was killed.")]]
+            [[(d.public,    "After coming to a decision, $target is "+
+                            "quickly dragged from the crowd and "+
+                            "dragged to the hanging tree. $target is "+
+                            "strung up, and the block kicked from "+
+                            "beneath their feet. There is a yelp of "+
+                            "pain, but $target's neck doesn't snap, "+
+                            "and fur begins to sprout from his/her "+
+                            "body. A gunshot rings out, as a "+
+                            "villager puts a silver bullet in the "+
+                            "beast's head..."),
+              (d.public,    "$target the werewolf was killed.")]]
         m[t.die][t.Die.vote][r.seer] = \
-            [[(mt.chan, "$target runs before the mob is organised, "+
-                        "dashing away from the village. Tackled to "+
-                        "the ground near the lake, $target is tied "+
-                        "to a log, screaming, thrown into the water. "+
-                        "With no means of escape, $target the Seer "+
-                        "drowns, but as the villagers watch, cards "+
-                        "float to the surface and their mistake "+
-                        "is all too apparent..."),
-              (mt.chan, "$target the seer was killed.")]]
+            [[(d.public,    "$target runs before the mob is organised, "+
+                            "dashing away from the village. Tackled to "+
+                            "the ground near the lake, $target is tied "+
+                            "to a log, screaming, thrown into the water. "+
+                            "With no means of escape, $target the Seer "+
+                            "drowns, but as the villagers watch, cards "+
+                            "float to the surface and their mistake "+
+                            "is all too apparent..."),
+              (d.public,    "$target the seer was killed.")]]
         m[t.die][t.Die.vote][r.guardian] = \
-            [[(mt.chan, "$target runs before the mob is "+ 
-                        "organised, running for the safety "+
-                        "of home. Just before reaching home, "+
-                        "$target is hit with a large stone, "+
-                        "then another. With no means of escape, "+
-                        "$target is stoned to death, his body "+
-                        "crushed. One curious villager enters "+
-                        "the house to find proof that $target "+
-                        "was a Guardian after all..."),
-              (mt.chan, "$target the guardian was killed.")]]
+            [[(d.public,    "$target runs before the mob is "+ 
+                            "organised, running for the safety "+
+                            "of home. Just before reaching home, "+
+                            "$target is hit with a large stone, "+
+                            "then another. With no means of escape, "+
+                            "$target is stoned to death, his body "+
+                            "crushed. One curious villager enters "+
+                            "the house to find proof that $target "+
+                            "was a Guardian after all..."),
+              (d.public,    "$target the guardian was killed.")]]
         m[t.die][t.Die.vote][r.angel] = \
-            [[(mt.chan, "$target the angel is killed by the angry mob."),
-              (mt.chan, "$target the angel was killed.")]]
+            [[(d.public,    "$target the angel is killed by the angry mob."),
+              (d.public,    "$target the angel was killed.")]]
         m[t.die][t.Die.vote][r.noone] = \
-            [[(mt.chan, "Noone was voted for. The good thingies "+
-                        "will not be happy")]]
+            [[(d.public,    "Noone was voted for. The good thingies "+
+                            "will not be happy")]]
         
         m[t.die][t.Die.not_voting][r.villager] = \
-            [[(mt.chan, "$target the villager died for defying "+
-                        "the good."),
-              (mt.chan, "$target the villager has died.")]]
+            [[(d.public,    "$target the villager died for defying "+
+                            "the good."),
+              (d.public,    "$target the villager has died.")]]
         m[t.die][t.Die.not_voting][r.wolf] = \
-            [[(mt.chan, "$target the werewolf died for defying "+
-                        "the good."),
-              (mt.chan, "$target the werewolf has died.")]]
+            [[(d.public,    "$target the werewolf died for defying "+
+                            "the good."),
+              (d.public,    "$target the werewolf has died.")]]
         m[t.die][t.Die.not_voting][r.seer] = \
-            [[(mt.chan, "$target the seer died for defying "+
-                        "the good."),
-              (mt.chan, "$target the seer has died.")]]
+            [[(d.public,    "$target the seer died for defying "+
+                            "the good."),
+              (d.public,    "$target the seer has died.")]]
         m[t.die][t.Die.not_voting][r.guardian] = \
-            [[(mt.chan, "$target the guardian died for "+
-                        "defying the good."),
-              (mt.chan, "$target the guardian has died.")]]
+            [[(d.public,    "$target the guardian died for "+
+                            "defying the good."),
+              (d.public,    "$target the guardian has died.")]]
         m[t.die][t.Die.not_voting][r.angel] = \
-            [[(mt.chan, "$target the angel died for defying "+
-                        "the good."),
-              (mt.chan, "$target the angel has died.")]]
+            [[(d.public,    "$target the angel died for defying "+
+                            "the good."),
+              (d.public,    "$target the angel has died.")]]
         
         m[t.die][t.Die.nick][r.villager] = \
-            [[(mt.chan, "$target the villager got killed for "+
-                        "changing nicks."),
-              (mt.chan, "$target the villager has died.")]]
+            [[(d.public,    "$target the villager got killed for "+
+                            "changing nicks."),
+              (d.public,    "$target the villager has died.")]]
         m[t.die][t.Die.nick][r.wolf] = \
-            [[(mt.chan, "$target the werewolf got killed for changing "+
-                        "nicks."),
-              (mt.chan, "$target the werewolf has died.")]]
+            [[(d.public,    "$target the werewolf got killed for changing "+
+                            "nicks."),
+              (d.public,    "$target the werewolf has died.")]]
         m[t.die][t.Die.nick][r.seer] = \
-            [[(mt.chan, "$target the seer got killed for changing "+
-                        "nicks."),
-              (mt.chan, "$target the seer has died.")]]
+            [[(d.public,    "$target the seer got killed for changing "+
+                            "nicks."),
+              (d.public,    "$target the seer has died.")]]
         m[t.die][t.Die.nick][r.guardian] = \
-            [[(mt.chan, "$target the guardian got killed for "+
-                        "changing nicks."),
-              (mt.chan, "$target the guardian has died.")]]
+            [[(d.public,    "$target the guardian got killed for "+
+                            "changing nicks."),
+              (d.public,    "$target the guardian has died.")]]
         m[t.die][t.Die.nick][r.angel] = \
-            [[(mt.chan, "$target the angel got killed for changing "+
-                        "nicks."),
-              (mt.chan, "$target the angel has died.")]]
+            [[(d.public,    "$target the angel got killed for changing "+
+                            "nicks."),
+              (d.public,    "$target the angel has died.")]]
         
         m[t.die][t.Die.leave][r.villager] = \
-            [[(mt.chan, "$target the villager got killed for "+
-                        "leaving the game."),
-              (mt.chan, "$target the villager has died.")]]
+            [[(d.public,    "$target the villager got killed for "+
+                            "leaving the game."),
+              (d.public,    "$target the villager has died.")]]
         m[t.die][t.Die.leave][r.wolf] = \
-            [[(mt.chan, "$target the werewolf got killed for "+
-                        "leaving the game."),
-              (mt.chan, "$target the werewolf has died.")]]
+            [[(d.public,    "$target the werewolf got killed for "+
+                            "leaving the game."),
+              (d.public,    "$target the werewolf has died.")]]
         m[t.die][t.Die.leave][r.seer] = \
-            [[(mt.chan, "$target the seer got killed for leaving "+
-                        "the game."),
-              (mt.chan, "$target the seer has died.")]]
+            [[(d.public,    "$target the seer got killed for leaving "+
+                            "the game."),
+              (d.public,    "$target the seer has died.")]]
         m[t.die][t.Die.leave][r.guardian] = \
-            [[(mt.chan, "$target the guardian got killed for "+
-                        "leaving the game."),
-              (mt.chan, "$target the guardian has died.")]]
+            [[(d.public,    "$target the guardian got killed for "+
+                            "leaving the game."),
+              (d.public,    "$target the guardian has died.")]]
         m[t.die][t.Die.leave][r.angel] = \
-            [[(mt.chan, "$target the angel got killed for "+
-                        "leaving the game."),
-              (mt.chan, "$target the angel has died.")]]
+            [[(d.public,    "$target the angel got killed for "+
+                            "leaving the game."),
+              (d.public,    "$target the angel has died.")]]
         
         ### WIN MESSAGES ###
         m[t.win][t.Win.win][r.wolf] = \
-            [[(mt.chan, "The werewolf has won.")]]
+            [[(d.public,    "The werewolf has won.")]]
         m[t.win][t.Win.win_p][r.wolf] = \
-            [[(mt.chan, "The werewolves have won.")]]
+            [[(d.public,    "The werewolves have won.")]]
         m[t.win][t.Win.win][r.villager] = \
-            [[(mt.chan, "The villager has won.")]]
+            [[(d.public,    "The villager has won.")]]
         m[t.win][t.Win.win_p][r.villager] = \
-            [[(mt.chan, "The villagers have won.")]]
+            [[(d.public,    "The villagers have won.")]]
         m[t.win][t.Win.win][r.noone] = \
-            [[(mt.chan, "No one is left alive. The town is desolate. "+
-                        "The game ends in adraw.")]]
+            [[(d.public,    "No one is left alive. The town is desolate. "+
+                            "The game ends in adraw.")]]
         
         m[t.win][t.Win.list_role][r.villager] = \
-            [[(mt.chan, "The villager was: $roles")]]
+            [[(d.public,    "The villager was: $roles")]]
         m[t.win][t.Win.list_role][r.wolf] = \
-            [[(mt.chan, "The werewolf was: $roles")]]
+            [[(d.public,    "The werewolf was: $roles")]]
         m[t.win][t.Win.list_role][r.seer] = \
-            [[(mt.chan, "The seer was: $roles")]]
+            [[(d.public,    "The seer was: $roles")]]
         m[t.win][t.Win.list_role][r.guardian] = \
-            [[(mt.chan, "The guardian was: $roles")]]
+            [[(d.public,    "The guardian was: $roles")]]
         m[t.win][t.Win.list_role][r.angel] = \
-            [[(mt.chan, "The angel was: $roles")]]
+            [[(d.public,    "The angel was: $roles")]]
         m[t.win][t.Win.list_role][r.traitor] = \
-            [[(mt.chan, "The traitor was: $roles")]]
+            [[(d.public,    "The traitor was: $roles")]]
 
         m[t.win][t.Win.list_role_p][r.villager] = \
-            [[(mt.chan, "The villagers were: $roles")]]
+            [[(d.public,    "The villagers were: $roles")]]
         m[t.win][t.Win.list_role_p][r.wolf] = \
-            [[(mt.chan, "The werewolves were: $roles")]]
+            [[(d.public,    "The werewolves were: $roles")]]
         m[t.win][t.Win.list_role_p][r.seer] = \
-            [[(mt.chan, "The seers were: $roles")]]
+            [[(d.public,    "The seers were: $roles")]]
         m[t.win][t.Win.list_role_p][r.guardian] = \
-            [[(mt.chan, "The guardian were: $roles")]]
+            [[(d.public,    "The guardian were: $roles")]]
         m[t.win][t.Win.list_role_p][r.angel] = \
-            [[(mt.chan, "The angels were: $roles")]]
+            [[(d.public,    "The angels were: $roles")]]
         m[t.win][t.Win.list_role_p][r.traitor] = \
-            [[(mt.chan, "The traitors were: $roles")]]
+            [[(d.public,    "The traitors were: $roles")]]
 
         ### MISC MESSAGES ###
         m[t.misc][t.Misc.help][r.noone] = \
-            [[(mt.notice_p, "To start of a game of Werewolf type: !"+
+            [[(d.private,   "To start of a game of Werewolf type: !"+
                             self.commands[Command.start]),
-              (mt.notice_p, "To join a running game, while joins are being "+
+              (d.private,   "To join a running game, while joins are being "+
                             "accepted, type: !"+
                             self.commands[Command.join]),
-              (mt.notice_p, "While a game is running and talking is "+
+              (d.private,   "While a game is running and talking is "+
                             "allowed, to name a random player type: !"+
                             self.commands[Command.randplayer]),
-              (mt.notice_p, "The rest of the commands will be explained "+
+              (d.private,   "The rest of the commands will be explained "+
                             "in the game.")]]
         m[t.misc][t.Misc.randplayer][r.noone] = \
-            [[(mt.chan, "The random player is: $target")]]
+            [[(d.public,    "The random player is: $target")]]
         m[t.misc][t.Misc.not_player][r.noone] = \
-            [[(mt.notice_p, "Sorry, you aren't a player of the current game. "+
+            [[(d.private,   "Sorry, you aren't a player of the current game. "+
                             "Join the next game to be part of the fun!")]]
         m[t.misc][t.Misc.dead][r.noone] = \
-            [[(mt.notice_p, "Sorry, the dead can't do anything.")]]
+            [[(d.private,   "Sorry, the dead can't do anything.")]]
         m[t.misc][t.Misc.alive_players][r.noone] = \
-            [[(mt.notice_p, "The alive players are: $alive")]]
+            [[(d.private,   "The alive players are: $alive")]]
 
 
