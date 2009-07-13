@@ -17,6 +17,26 @@ class Game_Events(Events):
                   'on_player_vote', 'on_player_kill', 'on_player_guard',
                   'on_player_see', 'on_player_death',)
 
+#EVENT DOCUMENTATION
+#on_game_start(g)       - called when the game is started
+#on_game_restart(g)     - called when someone tries to restart the game 
+#on_game_end(g)         - called when the game is ended
+#on_join_end(g)         - called when joining ends
+#on_roles_assigned(g)   - called when the roles are assigned
+#on_night_start(g)      - called when the night starts
+#on_see_result(g)       - called when the seer results are revealed
+#on_night_end(g)        - called when the night ends
+#on_day_start(g)        - called when the day starts
+#on_day_end(g)          - called when the day ends
+#on_vote_start(g)       - called when voting starts
+#on_vote_end(g)         - called when voting ends
+#on_player_join(g)      - called when player enters the join command
+#on_player_vote(g)      - called when player enters the vote command
+#on_player_kill(g)      - called when player enters the kill command
+#on_player_see(g)       - called when player enters the see command
+#on_player_guard(g)     - called when player enters the guard command
+#on_player_death(g)     - called when player dies
+
 class Game(object):
     def __init__(self, who):
         self.events  = Game_Events()
