@@ -21,14 +21,16 @@ class ThemeMessageType:
     num         = 13    #num message types
 
     class Game:     #game type subtypes
-        start           = 0 #message when a new game gets started
-        started         = 1 #message when players tries to start game when one 
-                            #is running alread
-        join_starting   = 2 #message when player joins channel and game is in
+        start_none      = 0 #message when a new game gets started
+        start_starting  = 1 #message when a player tries to start a game
+                            #when a current one is in the join phase
+        start_running   = 2 #message when a player tries to start a game
+                            #when on is running
+        join_none       = 3 #message when player joins channel and game is not running
+        join_starting   = 4 #message when player joins channel and game is in
                             #join phase
-        join_running    = 3 #message when player joins channel and game is running
-        join_none       = 4 #message when player joins channel and game is not running
-        num             = 5 #num game subtypes
+        join_running    = 5 #message when player joins channel and game is running
+        num             = 6 #num game subtypes
 
     class Command:  #command type subtypes
         unknown          = 0 #message when you enter an unknown command
@@ -65,13 +67,15 @@ class ThemeMessageType:
     class Kill:     #kill type subtypes
         success         = 0 #message when kill command succeeds
         success_p       = 1 #same as above but plural
-        not_night       = 2 #message when it's not night
-        not_wolf        = 3 #message when you aren't a wolf
-        invalid_format  = 4 #message when your kill command is invalidly formatted
-        invalid_target  = 5 #message when your target isn't in the game
-        invalid_target_wolf = 6 #message when your target is a wolf
-        invalid_target_dead = 7 #message when your target is dead
-        num             = 8 #num kill subtypes
+        fail            = 2 #message when kill fails due to player ability
+        fail_p          = 3 #same as above but plural
+        not_night       = 4 #message when it's not night
+        not_wolf        = 5 #message when you aren't a wolf
+        invalid_format  = 6 #message when your kill command is invalidly formatted
+        invalid_target  = 7 #message when your target isn't in the game
+        invalid_target_wolf = 8 #message when your target is a wolf
+        invalid_target_dead = 9 #message when your target is dead
+        num             = 10 #num kill subtypes
         
     class See:      #see type subtypes
         success         = 0 #message when see command succeeds
@@ -230,20 +234,22 @@ class WerewolfTheme(Theme):
         d   = ThemeMessageDest  #alias for ThemeMessageDest
 
         ### GAME MESSAGES ###
-        m[t.game][t.Game.start][r.noone] = \
+        m[t.game][t.Game.start_none][r.noone] = \
             [[(d.public,    "$user started a new game! You have $num "+
                             "seconds to join!")]]
-        m[t.game][t.Game.started][r.noone] = \
-            [[(d.private,   "A game already running. Join it if you still can!")]]
+        m[t.game][t.Game.start_starting][r.noone] = \
+            [[(d.private,   "A game is already running. Join it while still can!")]]
+        m[t.game][t.Game.start_running][r.noone] = \
+            [[(d.private,   "A game is already running.")]]
+        m[t.game][t.Game.join_none][r.noone] = \
+            [[(d.private,   "No game is running. Start one by typing: !" + 
+                            self.commands[Command.start])]]
         m[t.game][t.Game.join_starting][r.noone] = \
             [[(d.private,   "A game is starting. Type " + 
                             self.commands[Command.join] + " to join it.")]]
         m[t.game][t.Game.join_running][r.noone] = \
             [[(d.private,   "A game is already running. It should finish soon, "+
                             "then you can join the fun. :)")]]
-        m[t.game][t.Game.join_none][r.noone] = \
-            [[(d.private,   "No game is running. Start one by typing: !" + 
-                            self.commands[Command.start])]]
 
         ### COMMAND MESSAGES ###
         m[t.command][t.Command.unknown][r.noone] = \
@@ -352,6 +358,21 @@ class WerewolfTheme(Theme):
         m[t.kill][t.Kill.success_p][r.noone] = \
             [[(d.private,   "You have selected $target for your feast, but must "+
                             "wait for brethren to vote.")]]
+
+        m[t.kill][t.Kill.fail][r.guard] = \
+            [[(d.private,   "As you approach $target an unknown guardian "+
+                            "chases you away with wolf's bane.")]]
+        m[t.kill][t.Kill.fail][r.angel] = \
+            [[(d.private,   "As you approach $target, they pull out the wolf's "+
+                            "bane and you flee.")]]
+
+        m[t.kill][t.Kill.fail_p][r.guard] = \
+            [[(d.private,   "As your pack approaches $target an unknown guardian "+
+                            "chases you away with wolf's bane.")]]
+        m[t.kill][t.Kill.fail_p][r.angel] = \
+            [[(d.private,   "As your pack approaches $target, they pull out "+
+                            "the wolf's bane and you flee.")]]
+
         m[t.kill][t.Kill.not_night][r.noone] = \
             [[(d.private,   "You can only kill at night.")]]
         m[t.kill][t.Kill.not_wolf][r.noone] = \
