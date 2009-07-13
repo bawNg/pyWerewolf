@@ -18,6 +18,7 @@ class Game_Events(Events):
                   'on_player_see', 'on_player_death',)
 
 #EVENT DOCUMENTATION
+#TODO: Find place for player leaving in join and 
 #on_game_start(g)       - called when the game is started
 #on_game_restart(g)     - called when someone tries to restart the game 
 #on_game_end(g)         - called when the game is ended

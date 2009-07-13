@@ -227,6 +227,7 @@ class WerewolfTheme(Theme):
         self.commands[Command.see]          = "see"
         self.commands[Command.vote]         = "vote"
         self.commands[Command.randplayer]   = "randplayer"
+        self.commands[Command.admin]        = "admin"
 
         m   = self.messages     #alias for messages
         t   = ThemeMessageType  #alias for ThemeMessageType

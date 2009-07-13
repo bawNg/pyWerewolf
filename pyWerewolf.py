@@ -9,19 +9,28 @@ from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_nu
 from command_handler import *
 from timers import *
 from game import *
+from theme import Theme, ThemeMessageType
+from theme_handler import ThemeHandler
 import config
 
 class WerewolfBot(SingleServerIRCBot):
     def __init__(self, channel, nickname, server, port=6667):
         SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
         self.channel = channel
-        self.command_handler = Command_Handler(self)
+        self.command_handler = Command_Handler(self, self.theme)
         self.connection.add_global_handler("all_events", self.on_all_events, -100)
         self.timers = Timers()
+        self.theme = WerewolfTheme()
+        self.theme_handler = ThemeHandler(self.theme)
 
         #game
         self.game = None
         self.command_handler.reg_callback("start", self.start_game)
+
+    def set_theme(self, theme):
+        self.theme = theme
+        self.command_handler.set_theme(self.theme)
+        self.theme_handler.set_theme(self.theme)
 
     ### IRC Events ###
     def on_all_events(self, c, e):

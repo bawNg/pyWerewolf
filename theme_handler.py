@@ -10,8 +10,8 @@ class Tokens:
     replace = ["bot", "num", "user", "target", "votes", "roles", "alive"]
 
 class ThemeHandler:
-    def __init__(self):
-        self.theme = Theme()
+    def __init__(self, theme):
+        self.theme = theme
 
     def set_theme(self, theme):
         self.theme = theme

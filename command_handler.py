@@ -13,7 +13,8 @@ class Command:
     see         = 6 #command to see
     vote        = 7 #command to vote
     randplayer  = 8 #command to choose random player
-    num         = 9 #num commands
+    admin       = 9 #command to admin bot
+    num         = 10 #num commands
 
 class Command_Message:
     def __init__(self, e, msg):
@@ -30,10 +31,14 @@ class Command_Message:
             self.args    = msg.split()[1:]
 
 class Command_Handler:
-    def __init__(self, bot):
+    def __init__(self, bot, theme):
         self.irc        = bot
         self.c          = bot.connection
         self.callbacks  = {}
+        self.theme      = theme
+
+    def set_theme(self, theme):
+        self.theme = theme
 
     def process_command(self, e, msg):
         if msg.strip() == "": return
