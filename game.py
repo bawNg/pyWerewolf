@@ -5,28 +5,25 @@ from events import Events
 from timers import *
 from player import *
 from game_data import *
+from theme import ThemeMessageType as MessageType
 import config
 
 class Game_Events(Events):
     __events__ = ('on_game_start', 'on_game_restart', 'on_game_end',
-                  'on_role_assigned','on_roles_assigned','on_role_notify_other',
-                  'on_join_end', 'on_night_start', 'on_night_end',
-                  'on_day_start','on_day_end', 'on_wolf_kill', 'on_seer_see',
-                  'on_vote_start','on_vote_end','on_vote_result','on_vote_tie',
-                  'on_good_defy', 'on_night_after_message',
-                  'on_player_vote',
-                  'on_player_kill', 'on_player_guard', 'on_player_see')
+                  'on_role_notify','on_roles_assigned', 'on_join_end',
+                  'on_night_start', 'on_night_end', 'on_see_result',
+                  'on_day_start','on_day_end',
+                  'on_vote_start','on_vote_end','on_vote_result',
+                  'on_player_vote', 'on_player_kill', 'on_player_guard',
+                  'on_player_see', 'on_player_death',)
 
-#TODO: maybe make events more general and then use parameters to specify:
-#   eg. on_player_death(Type.lynch, ...)
-#   and on_player_death(Type.kill, ...)
 class Game(object):
-    def __init__(self, bot, who):
-        self.events = Game_Events()
-        self.timers = Timers()
+    def __init__(self, who):
+        self.events  = Game_Events()
+        self.timers  = Timers()
         self.players = {}
-        self.roles = [[] for i in xrange(Role.num)]
-        self.mode = Mode.join
+        self.roles   = [[] for i in xrange(Role.num)]
+        self.mode    = Mode.join
         self._start(who)
 
     def process_timeout(self):
@@ -104,8 +101,8 @@ class Game(object):
             self.players[player].role = roles[i]
             if roles[i].role == Role.wolf: self.roles[Role.wolf].append(who)
             nick = self.players[player].nick
-            self.events.on_role_assigned(self, nick, roles[i].role)
-
+            self.events.on_role_notify(self, MessageType.Role.announce, \
+                                       nick=nick, role=roles[i].role)
 
         if num_wolves >= 2:
             for i in xrange(len(self.roles[Role.wolf])):
@@ -116,7 +113,8 @@ class Game(object):
                     other_wolves.append(self.roles[Role.wolf][j])
 
                 nick = self.roles[Role.wolf][i]
-                self.events.on_role_notify_other(self, nick, other_wolves)
+                self.events.on_role_notify(self, MessageType.Role.announce, \
+                                       nick=nick, other_players=other_wolves)
 
         self.events.on_roles_assigned(self, num_wolves, num_seers, \
                                       num_guardians, num_angels)
@@ -158,12 +156,12 @@ class Game(object):
 
     def _start(self, nick):
         #setup game info
-        self.mode = Mode.join
         self._add_player(nick)
         self.timers.add_timer(Consts.join_time, self.join_end)
         self.events.on_game_start(self, nick)
 
     def restart(self, who, args):
+        #TODO: add logic here?
         self.events.on_game_restart(self, nick)
 
     def end(self):
@@ -227,7 +225,7 @@ class Game(object):
             if not player.see: continue
             if player.see.lower() in self.players:
                 role = self.players[player.see.lower()].role.appears_as
-                self.events.on_seer_see(self, player.nick, player.see, role)
+                self.events.on_see_result(self, player.nick, player.see, role)
 
         #check if wolf target is alive
         if wolf_target is not None:
@@ -241,17 +239,15 @@ class Game(object):
                 wolf_target = None
 
         #kill wolf target
-        if wolf_target is not None:
+        nick, role = None, None
+        if wolf_target:
             role = self.players[wolf_target].role.role
             nick = self.players[wolf_target].nick
-            self.events.on_wolf_kill(self, nick, role)
-            self._rem_player(wolf_target)
-        else:
-            self.events.on_wolf_kill(self, None, Role.noone)
+        self.events.on_player_death(self, MessageType.Die.kill, nick, role)
+        if wolf_target: self._rem_player(wolf_target)
 
         #if the game hasn't been won start the next day
-        if not self._check_win():
-            self.day_start()
+        if not self._check_win(): self.day_start()
 
     def day_start(self):
         self.mode = Mode.day_talk
@@ -284,28 +280,27 @@ class Game(object):
 
         lynch_target = None
         if len(lynch_targets) > 1:
-            self.events.on_vote_tie(self)
+            self.events.on_vote_result(self, MessageType.Vote.tie)
             ran = random.randint(0, len(lynch_targets)-1)
             lynch_target = lynch_targets[ran]
         elif len(lynch_targets) == 1:
             lynch_target = lynch_targets[0]
 
-        if lynch_target is None:
-            self.events.on_vote_result(self, None, None)
-        else:
+        target, role = None, None
+        if lynch_target:
             target = self.players[lynch_target]
             role = target.role.role
-            self.events.on_vote_result(self, target, role)
-            self._rem_player(target.nick.lower())
+        self.events.on_player_death(self, MessageType.Die.vote, target, role)
+        if lynch_target: self._rem_player(target.nick.lower())
 
         #kills for defying the good
         for pn, player in self.players.items():
             if player.notvoted >= Consts.good_kill_times:
-                self.events.on_good_defy(self, player.nick, player.role.role)
+                self.events.on_player_death(self, MessageType.Die.not_voting, \
+                                            player.nick, player.role.role)
                 self._rem_player(player.nick.lower())
 
         if not self._check_win():
-            self.events.on_night_after_message(self) # event name needs revamping
             self.night_start()
 
     def join(self, who, args):
