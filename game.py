@@ -15,30 +15,39 @@ class Game_Events(Events):
                   'on_day_start','on_day_end',
                   'on_vote_start','on_vote_end','on_vote_result',
                   'on_player_vote', 'on_player_kill', 'on_player_guard',
-                  'on_player_see', 'on_player_death',)
+                  'on_player_see', 'on_player_death')
 
 #EVENT DOCUMENTATION
-#TODO: Find place for player leaving in join and 
-#on_game_start(g)       - called when the game is started
-#on_game_restart(g)     - called when someone tries to restart the game 
-#on_game_end(g)         - called when the game is ended
-#on_join_end(g)         - called when joining ends
-#on_roles_assigned(g)   - called when the roles are assigned
-#on_night_start(g)      - called when the night starts
-#on_see_result(g)       - called when the seer results are revealed
-#on_night_end(g)        - called when the night ends
-#on_day_start(g)        - called when the day starts
-#on_day_end(g)          - called when the day ends
-#on_vote_start(g)       - called when voting starts
-#on_vote_end(g)         - called when voting ends
-#on_player_join(g)      - called when player enters the join command
-#on_player_vote(g)      - called when player enters the vote command
-#on_player_kill(g)      - called when player enters the kill command
-#on_player_see(g)       - called when player enters the see command
-#on_player_guard(g)     - called when player enters the guard command
-#on_player_death(g)     - called when player dies
+#TODO: Find place for player leaving in join and
+#on_game_start(g, nick)         - called when the game is started
+#on_game_restart(g, nick)       - called when someone tries to restart the game
+#on_game_end(g)                 - called when the game is ended
+#on_join_end(g, game_started)   - called when joining ends
+##called when a role has been assigned
+#on_role_notify(g, type, nick=None, role=None, other_players=None)
+##called after the roles have been assigned
+#on_roles_assigned(g, wolf_count, seer_count, guard_count, angel_count)
+#on_night_start(g)              - called when the night starts
+##called when the seer results are revealed
+#on_see_result(g, nick, target, role)
+#on_night_end(g)                  - called when the night ends
+#on_day_start(g)                  - called when the day starts
+#on_day_end(g)                    - called when the day ends
+#on_vote_start(g)                 - called when voting starts
+#on_vote_end(g)                   - called when voting ends
+#on_vote_result(g, type)          - called when vote result
+#on_player_vote(g, nick, target)  - called when player enters the vote command
+#on_player_kill(g, nick, target)  - called when player enters the kill command
+#on_player_see(g, nick, target)   - called when player enters the see command
+#on_player_guard(g, nick, target) - called when player enters the guard command
+#on_player_death(g, type, nick, role) - called when player dies
 
 class Game(object):
+    class Mode:
+        join        = 0
+        night       = 1
+        day_talk    = 2
+        day_vote    = 3
     def __init__(self, who):
         self.events  = Game_Events()
         self.timers  = Timers()
@@ -134,7 +143,7 @@ class Game(object):
                     other_wolves.append(self.roles[Role.wolf][j])
 
                 nick = self.roles[Role.wolf][i]
-                self.events.on_role_notify(self, MessageType.Role.announce, \
+                self.events.on_role_notify(self, MessageType.Role.other, \
                                        nick=nick, other_players=other_wolves)
 
         self.events.on_roles_assigned(self, num_wolves, num_seers, \
@@ -206,6 +215,7 @@ class Game(object):
         self.timers.add_timer(time, self.night_end)
 
     def night_end(self):
+        self.events.on_night_end(self)
         #find wolf target
         wolf_targets = {}
         max_votes = 0
@@ -249,14 +259,14 @@ class Game(object):
                 self.events.on_see_result(self, player.nick, player.see, role)
 
         #check if wolf target is alive
-        if wolf_target is not None:
+        if wolf_target:
             if wolf_target not in self.players:
                 wolf_target = None
 
         #check if wolf target is angel
-        if wolf_target is not None:
+        if wolf_target:
             target = self.players[wolf_target]
-            if target.role.role == Role.angel:
+            if target.role == Role.angel:
                 wolf_target = None
 
         #kill wolf target
@@ -360,5 +370,10 @@ class Game(object):
         player_nicks = []
         for player in self.players: player_nicks.append(player.nick)
         return player_nicks[random.randint(0, len(player_nicks)-1)]
-
+    ### Public Methods ###
     #TODO: add public method(s) for extending timer, etc
+    def get_role_count(self, role): return len(self.roles[role])
+    def get_player_nicks(self): return self.players.keys()
+    def get_player_count(self): return len(self.players)
+    player_nicks = property(get_player_nicks)
+    player_count = property(get_player_count)
