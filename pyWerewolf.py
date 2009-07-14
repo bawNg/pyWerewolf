@@ -9,7 +9,7 @@ from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_nu
 from command_handler import *
 from timers import *
 from game import *
-from theme import Theme, ThemeMessageType
+from theme import Theme, ThemeMessageType as MessageType
 from theme_handler import ThemeHandler
 import config
 
@@ -111,14 +111,10 @@ class WerewolfBot(SingleServerIRCBot):
 
     def reset_modes(self):
         voiced_nicks = self.channels[self.channel].voiced()
-        print "unvoice: ", voiced_nicks
-        self.set_moderated(False)
-        self.devoice_users(voiced_nicks,True)
+        self.devoice_users(voiced_nicks, True)
 
-    def unvoice_everyone(self):
-        voiced_nicks = self.channels[self.channel].voiced()
-        print "unvoice: ", voiced_nicks
-        self.devoice_users(voiced_nicks)
+    def devoice_everyone(self):
+        self.devoice_users(self.channels[self.channel].voiced())
 
     def set_modes(self, modes):
         self.connection.mode(self.channel, modes)
@@ -127,7 +123,6 @@ class WerewolfBot(SingleServerIRCBot):
         self.set_modes("%sm" % ('+' if moderated else '-'))
 
     def voice_users(self, targets):
-        print "voice: ", targets
         for start in xrange(0, len(targets), 12):
             end = start+12
             if len(targets) < end: end = len(targets)
@@ -146,10 +141,176 @@ class WerewolfBot(SingleServerIRCBot):
             if unmoderate: modes = "-m%s" % modes[1:]
             self.set_modes(modes)
 
+    ### Game Events ###
+    def game_on_game_start(self, g, nick):
+        pass #announce that nick has started a game
+
+    def game_on_game_restart(self, g):
+        pass #announce that nick has restarted a game
+
+    def game_on_game_end(self, g):
+        self.remove_game()
+
+    def game_on_join_end(self, g, game_started):
+        #join_end_message
+        if game_started:
+            self.set_moderated()
+            #join_success_message (g.player_count)
+        else:
+            #join_fail_message
+            self.remove_game()
+
+    def game_on_role_notify(g, type, nick, role=None, other_players=None):
+        if type == MessageType.Role.announce:
+            pass #role_message[role]
+        elif type == MessageType.Role.other:
+            if len(other_wolves) == 1:
+                pass #role_other_message[] (other_players)
+            else:
+                pass #role_others_message[] (other_players)
+
+    def game_on_roles_assigned(self, g, wolf_count, seer_count, \
+                               guard_count, angel_count):
+        if wolf_count > 1:
+            pass #role_num_message[Role.wolf]
+        if seer_count > 1:
+            pass #role_num_message[Role.seer]
+        if guard_count > 1:
+            pass #role_num_message[Role.guard]
+        if angel_count > 1:
+            pass #role_num_message[Role.angel]
+
+    def game_on_night_start(self, g):
+        for role in [Role.wolf, Role.seer, Role.guardian]:
+            if g._is_alive(role):
+                if g._num(role) == 1:
+                    pass #night_player_message[role]
+                else:
+                    pass #night_players_message[role]
+
+    def game_on_see_result(self, g, nick, target, role):
+        pass #see_message[role]
+
+    def game_on_night_end(self, g):
+        pass
+
+    def game_on_day_start(self, g):
+        self.voice_users(g.player_nicks)
+        #day_start_message
+
+    def game_on_day_end(self, g):
+        pass #NOTE: event has no place to be raised
+
+    def game_on_vote_start(self, g):
+        pass #vote_start_message
+
+    def game_on_vote_end(self, g):
+        self.devoice_everyone()
+        #vote_end_message
+
+    def game_on_vote_result(self, g, type):
+        if type == MessageType.Vote.tie:
+            pass #vote_tie_message
+
+    def game_on_player_vote(self, g, nick, target):
+        if nick.lower() not in g.players:
+            pass #not_player_message
+        if g.mode != g.Mode.day_vote:
+            pass #vote_not_vote_time_message
+        if target.lower() not in g.players:
+            pass #vote_invalid_target_message
+        #TODO: move the above command error checking to command_handler
+        pass #vote_target_message
+
+    def game_on_player_kill(self, g, nick, target):
+        #check command arguments
+        if nick.lower() not in g.players:
+            # nick is not taking part in the game
+            pass #not_player_message
+        elif g.mode != g.Mode.night:
+            # its not night time
+            pass #kill_not_night_time_message
+        elif target.lower() not in g.players:
+            # target is not taking part in the game
+            pass #kill_invalid_target_message
+        elif player.role.role != Role.wolf:
+            # player is not a wolf
+            pass #kill_not_wolf_message
+        elif target.role == Role.wolf:
+            # target is a wolf
+            pass #kill_invalid_wolf_message
+
+        if g.get_role_count(Role.wolf) == 1:
+            pass #kill_wolf_message
+        else:
+            pass #kill_wolves_message
+
+    def game_on_player_guard(self, g, nick, target):
+        #check command arguments
+        if nick.lower() not in g.players:
+            # nick is not taking part in the game
+            pass #not_player_message
+        elif g.mode != g.Mode.night:
+            # its not night time
+            pass #guard_not_night_time_message
+        elif target.lower() not in g.players:
+            # target is not taking part in the game
+            pass #guard_invalid_target_message
+        elif player.role != Role.guardian:
+            # player is not a guardian
+            pass #guard_not_guard_message
+
+        pass #guard_target_message
+
+    def game_on_player_see(self, g, nick, target):
+        #check command arguments
+        if nick.lower() not in g.players:
+            # nick is not taking part in the game
+            pass #not_player_message
+        elif g.mode != g.Mode.night:
+            # its not night time
+            pass #see_not_night_time_message
+        elif target.lower() not in g.players:
+            # target is not taking part in the game
+            pass #seer_invalid_target_message
+        elif player.role != Role.guardian:
+            # player is not a seer
+            pass #seer_not_seer_message
+
+        pass #see_target_message
+
+    def game_on_player_death(self, g, type, nick, role):
+        if type == MessageType.Die.kill:
+            pass #kill_die_message[role]
+        elif type == MessageType.Die.vote:
+            pass #vote_die_message[role]
+        elif type == MessageType.Die.not_voting:
+            pass #good_defy_message[role]
+
     ### Game Management Methods ###
     def start_game(self, who, args):
         if self.game is None:
             self.game = Game(self, who)
+            game_events = self.game.events
+            game_events.on_game_start       += game_on_game_start
+            game_events.on_game_restart     += game_on_game_restart
+            game_events.on_game_end         += game_on_game_end
+            game_events.on_role_notify      += game_on_role_notify
+            game_events.on_roles_assigned   += game_on_roles_assigned
+            game_events.on_join_end         += game_on_join_end
+            game_events.on_night_start      += game_on_night_start
+            game_events.on_night_end        += game_on_night_end
+            game_events.on_see_result       += game_on_see_result
+            game_events.on_day_start        += game_on_day_start
+            game_events.on_day_end          += game_on_day_end
+            game_events.on_vote_start       += game_on_vote_start
+            game_events.on_vote_end         += game_on_vote_end
+            game_events.on_vote_result      += game_on_vote_result
+            game_events.on_player_vote      += game_on_player_vote
+            game_events.on_player_kill      += game_on_player_kill
+            game_events.on_player_guard     += game_on_player_guard
+            game_events.on_player_see       += game_on_player_see
+            game_events.on_player_death     += game_on_player_death
         else:
             self.game.restart(who, args)
 
