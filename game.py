@@ -260,7 +260,7 @@ class Game(object):
         #guardians protection
         wolf_guardians = []
         for player in self._role(Role.guardian):
-            guard = player.guard.lower()
+            guard = player.guard.lower() if player.guard else ''
             if self.players[guard].role.role == Role.wolf:
                 wolf_guardians.append(player.nick.lower())
 
