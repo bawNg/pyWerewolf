@@ -95,9 +95,9 @@ class Theme:
 
     #message sent to wolf when there are more than one wolf
     role_other_message              = [None for i in xrange(Role.num)]
-    role_other_message[Role.wolf]   = ["Your brethren is $wolves."]
+    role_other_message[Role.wolf]   = ["Your brethren is $roles."]
     role_others_message             = [None for i in xrange(Role.num)]
-    role_others_message[Role.wolf]  = ["Your brethren are: $wolves"]
+    role_others_message[Role.wolf]  = ["Your brethren are: $roles"]
 
     #message sent when there are more than one of special roles
     role_num_message                = [None for i in xrange(Role.num)]
